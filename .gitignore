@@ -1,6 +1,7 @@
 # target目录
-target/*
-workspace.xml
+target/
+.idea/
+*.iml
 # Compiled class file
 *.class
 
