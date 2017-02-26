@@ -1,4 +1,4 @@
-package ForkJoin;
+package MultiThread.ForkJoin;
 
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;

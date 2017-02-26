@@ -1,4 +1,4 @@
-package ForkJoin;
+package MultiThread.ForkJoin;
 
 public class Product {
 	private String name;
