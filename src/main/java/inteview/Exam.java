@@ -1,4 +1,4 @@
-package 上格云面试;
+package inteview;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -8,6 +8,7 @@ import java.util.*;
 
 /**
  * Created by 曹云 on 2017/2/4.
+ * 上格云面试
  */
 public class Exam {
 	public int search(int[] array, int value) {
