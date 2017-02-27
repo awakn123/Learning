@@ -25,10 +25,10 @@ public class Main {
 		ForkJoinPool pool = new ForkJoinPool();
 		pool.execute(task);
 		do {
-			System.out.printf("Main: Thread Count: %d\n",
+			System.out.printf("FixNum: Thread Count: %d\n",
 					pool.getActiveThreadCount());
-			System.out.printf("Main: Thread Steal: %d\n", pool.getStealCount());
-			System.out.printf("Main: Parallelism: %d\n", pool.getParallelism());
+			System.out.printf("FixNum: Thread Steal: %d\n", pool.getStealCount());
+			System.out.printf("FixNum: Parallelism: %d\n", pool.getParallelism());
 			try {
 				TimeUnit.MILLISECONDS.sleep(5);
 			} catch (InterruptedException e) {
@@ -39,7 +39,7 @@ public class Main {
 		pool.shutdown();
 
 		if(task.isCompletedNormally()) {
-			System.out.printf("Main: The process has completed normally.\n");
+			System.out.printf("FixNum: The process has completed normally.\n");
 		}
 
 		for(Product product : products) {
@@ -48,6 +48,6 @@ public class Main {
 			}
 		}
 
-		System.out.println("Main: End of the program.\n");
+		System.out.println("FixNum: End of the program.\n");
 	}
 }
