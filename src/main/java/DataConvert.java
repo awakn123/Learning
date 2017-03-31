@@ -37,7 +37,7 @@ public class DataConvert {
 		List<Integer> list = Lists.newArrayList(175,52,35,106,98,167,127,173,239,61,104,165,36,62,56,99,231,59,108,48,60,34,40);
 
 		for (Integer i : list) {
-			System.out.print(sqlServerColumnTypeMap.get(i)+",");
+			System.out.printf("%s(%s),",sqlServerColumnTypeMap.get(i),i);
 		}
 	}
 }
