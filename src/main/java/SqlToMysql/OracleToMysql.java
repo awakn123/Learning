@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -29,27 +30,8 @@ public class OracleToMysql {
 	public static void main(String[] args) throws IOException {
 		// 1~22
 		String rootPath = "./src/test/resource/oracle";
-		String rootPath2 = "./src/test/resource/E9_oracle_other.sql";
 		List<SqlFile> sqlFiles = readFile(rootPath);
-		List<SqlFile> sqlFiles2 = readFile(rootPath2);
-		SqlFile root = sqlFiles2.get(0);
-		Map<String,SqlFile> sqlFileMap = Maps.newHashMap();
-		sqlFiles.stream().forEach(sqlFile -> sqlFileMap.put(sqlFile.fileName, sqlFile));
-		int i=0;
-		boolean wrong = false;
-		for (int k=1;k<=22;k++) {
-			SqlFile sqlFile = sqlFileMap.get(k+".sql");
-			for (int j =0;j<sqlFile.contentList.size();j++) {
-				if (!root.contentList.get(i).equals(sqlFile.contentList.get(j))) {
-					System.err.printf("root:%s行,sqlFile:%s,%s行\n",i,sqlFile.fileName, j);
-					wrong = true;
-					break;
-				}
-				i++;
-			}
-			if (wrong) break;
-		}
-/*		List<SqlBlock> blocks = Lists.newArrayList();
+		List<SqlBlock> blocks = Lists.newArrayList();
 		for (SqlFile sqlFile : sqlFiles) {
 			blocks.addAll(sqlFile.splitFileToBlock("/"));
 		}
@@ -63,7 +45,8 @@ public class OracleToMysql {
 			blockMap.putIfAbsent(sqlBlock.type, new ArrayList<SqlBlock>());
 			blockMap.get(sqlBlock.type).add(sqlBlock);
 		});
-		blockNumMap.entrySet().stream().forEach(entry -> System.out.println(entry.getKey() + ":" + entry.getValue()));*/
+		blockNumMap.entrySet().stream().forEach(entry -> System.out.println(entry.getKey() + ":" + entry.getValue()));
+		System.out.println(blocks.size());
 	}
 
 	private static void writeFile(String writeFilePath, SqlFile fileContent, int begin, int end) throws IOException {
