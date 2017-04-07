@@ -77,7 +77,7 @@ public class SQLServerToMysql {
 	 * @return
 	 */
 	private static String countAndRemove(SqlType sqlType, String content) {
-		Matcher m = sqlType.getPattern().matcher(content);
+		Matcher m = sqlType.getHeadPattern().matcher(content);
 		StringBuffer sb = new StringBuffer();
 		int num = 0;
 		while (m.find()) {

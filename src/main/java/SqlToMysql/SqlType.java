@@ -1,5 +1,6 @@
 package SqlToMysql;
 
+import SqlToMysql.oracleSqlType.OracleFunction;
 import SqlToMysql.oracleSqlType.OracleProcedure;
 import com.google.common.collect.Lists;
 
@@ -9,23 +10,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SqlType {
-	private Pattern pattern;
+	private Pattern headPattern;
 	private String name;
 	private int num;
 	private String code;
 	private Pattern endPattern;
 	private Pattern namePattern;
 
-	public SqlType(Pattern pattern, Pattern endPattern, Pattern namePattern, String name, String code) {
-		this.pattern = pattern;
+	public SqlType(Pattern headPattern, Pattern endPattern, Pattern namePattern, String name, String code) {
+		this.headPattern = headPattern;
 		this.endPattern = endPattern;
 		this.name = name;
 		this.code = code;
 		this.namePattern = namePattern;
 	}
 
-	public Pattern getPattern() {
-		return pattern;
+	public Pattern getHeadPattern() {
+		return headPattern;
 	}
 
 	public Pattern getEndPattern() {
@@ -53,8 +54,8 @@ public class SqlType {
 		return code;
 	}
 
-	private SqlType(Pattern pattern, String name) {
-		this.pattern = pattern;
+	private SqlType(Pattern headPattern, String name) {
+		this.headPattern = headPattern;
 		this.name = name;
 	}
 
@@ -106,12 +107,33 @@ public class SqlType {
 
 	public static List<SqlType> getOracleType() {
 		List<SqlType> types = Lists.newArrayList(
-				new OracleProcedure()
+				new OracleProcedure(),
+				new OracleFunction()
 		);
 		return types;
 	}
+
 	public static Pattern getCommentPattern() {
 		return Pattern.compile("/\\*.*?\\*/");
+	}
+
+	public static String removeParam(String sql) {
+		int start = -1, end = -1, count = 0;
+		char[] chars = sql.toCharArray();
+		for (int i = 0; i < chars.length; i++) {
+			char c = chars[i];
+			if ('(' == c) count++;
+			if (')' == c) count--;
+			if (count > 0 && start < 0) start = i;
+			if (count == 0 && start >= 0) {
+				end = i;
+				break;
+			}
+		}
+		if (start>=0 && end >=0) {
+			return (start == 0 ? "" : sql.substring(0, start)) + (end + 1 == sql.length() ? "" : sql.substring(end + 1));
+		}
+		return sql;
 	}
 
 	public static void assignOracleBlock(List<SqlBlock> blocks) {
@@ -119,12 +141,12 @@ public class SqlType {
 	}
 
 	private boolean check(SqlBlock block) {
-		Matcher m = this.pattern.matcher(block.sql);
+		Matcher m = this.headPattern.matcher(block.sql);
 		return m.find();
 	}
 
 	public String getHead(SqlBlock sqlBlock) {
-		Matcher m = this.pattern.matcher(sqlBlock.sql);
+		Matcher m = this.headPattern.matcher(sqlBlock.sql);
 		return m.find() ? m.group() : null;
 	}
 
@@ -142,7 +164,7 @@ public class SqlType {
 		if (sqlBlock == null || sqlBlock.sqlList == null || sqlBlock.sqlList.isEmpty()) {
 			return SingleType.empty;
 		}
-		if (sqlBlock.sqlList.size() > 2) {
+		if (sqlBlock.sqlList.size() >= 2) {
 			return SingleType.many;
 		}
 		String sql = sqlBlock.sqlList.get(0);
@@ -150,9 +172,9 @@ public class SqlType {
 	}
 
 	public enum SingleType {
-		select("^SELECT"), selectinto("^SELECT INTO"), cursor("^OPEN"),
+		select("^SELECT"), selectinto("^SELECT INTO"), cursor("OPEN|FOR"),
 		update("^UPDATE"), insert("^INSERT"), delete("^DELETE"),
-		many, empty, other;
+		many("BEGIN"), empty, other;
 		private Pattern pattern;
 
 		private SingleType() {

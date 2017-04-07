@@ -31,19 +31,28 @@ public class SqlFile {
 			if (StringUtils.isBlank(str))
 				continue;
 			// 注释校验
-			if (str.startsWith("/*") || isComment) {
-				int commentEnd = str.indexOf("*/");
-				if (commentEnd >= 0)
-					if (commentEnd + 2 == str.length() - 1) {
-						isComment = false;
-					} else {
-						str = str.substring(commentEnd + 2);
-						isComment = false;
-					}
-				else
+			String preStr="";
+			while (str.indexOf("/*") >= 0 || isComment) {
+				if (!isComment) {
 					isComment = true;
+					if (!str.startsWith("/*")) {
+						preStr+=str.substring(0, str.indexOf("/*"));
+					}
+				}
+				int commentEnd = str.indexOf("*/");
+				if (commentEnd >= 0) {
+					isComment = false;
+					str = str.substring(commentEnd + 2);
+				} else {
+					str = "";
+					break;
+				};
 			}
-			if (isComment || str.startsWith("--") || StringUtils.isBlank(str))
+			str = preStr + str;
+			if (str.indexOf("--") >=0) {
+				str = str.substring(0,str.indexOf("--"));
+			}
+			if (isComment || StringUtils.isBlank(str))
 				continue;
 			if (block == null) {
 				block = new SqlBlock(i, this.fileName);
