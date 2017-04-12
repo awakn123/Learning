@@ -3,9 +3,7 @@ package SqlToMysql;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -46,14 +44,15 @@ public class SQLServerToMysql {
 			File f = files[i];
 			if (i%500 == 0)
 				System.out.printf("正在读取第%s个文件，共%s个，文件名:%s\n", i+1, files.length, f.getName());
-			SqlFile sqlFile = readFile(f);
-			String sql = mergeSpace(sqlFile.content.toUpperCase());
+			SqlFile sqlFile = SqlFile.readFile(f.getPath()).get(0);
+			// 这里原意是取sqlFile中的content，现在content去掉了，这块暂时先不改了。
+			String sql = mergeSpace(sqlFile.getContentList().toString().toUpperCase());
 			for (SqlType sqlType : sqlTypes) {
 				sql = countAndRemove(sqlType, sql);
 			}
 			sql = StringUtils.replaceAll(sql, " GO ", " GO\n");
 			if (StringUtils.isNotBlank(sql)) {
-				otherBlocks.add(new SqlBlock(sql, f.getName()));
+				otherBlocks.add(new SqlBlock(sql, sqlFile));
 			}
 		}
 		for (SqlType sqlType : sqlTypes) {
@@ -64,7 +63,7 @@ public class SQLServerToMysql {
 		if (!otherBlocks.isEmpty()) {
 			System.out.println("其它:");
 			for (SqlBlock sqlBlock : otherBlocks) {
-				System.out.printf("%s:%s\n", sqlBlock.fileName,sqlBlock.sql);
+				System.out.printf("%s:%s\n", sqlBlock.getSqlFile(),sqlBlock.sql);
 			}
 		}
 	}
@@ -100,27 +99,4 @@ public class SQLServerToMysql {
 		return StringUtils.replaceAll(noTab, " +", " ");
 	}
 
-	/**
-	 * 读取整个文件
-	 *
-	 * @param f
-	 * @return
-	 * @throws IOException
-	 */
-	private static SqlFile readFile(File f) throws IOException {
-		try (BufferedReader reader = new BufferedReader(new FileReader(f))) {
-			StringBuffer buffer = new StringBuffer();
-			List<Integer> brlines = Lists.newArrayList();
-			String tempString = null;
-			// 一次读入一行，直到读入null为文件结束
-			while ((tempString = reader.readLine()) != null) {
-				if (tempString.startsWith("--")) {
-					tempString = "/*" + tempString + "*/";
-				}
-				buffer.append(tempString).append(" ");
-				brlines.add(buffer.length());
-			}
-			return new SqlFile(buffer.toString(), brlines);
-		}
-	}
 }

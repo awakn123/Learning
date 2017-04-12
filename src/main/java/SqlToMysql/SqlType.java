@@ -161,19 +161,19 @@ public class SqlType {
 	}
 
 	public SingleType getBlockType(SqlBlock sqlBlock) {
-		if (sqlBlock == null || sqlBlock.sqlList == null || sqlBlock.sqlList.isEmpty()) {
+		if (sqlBlock == null || sqlBlock.getSqlList() == null || sqlBlock.getSqlList().isEmpty()) {
 			return SingleType.empty;
 		}
-		if (sqlBlock.sqlList.size() >= 2) {
+		if (sqlBlock.getSqlList().size() >= 2) {
 			return SingleType.many;
 		}
-		String sql = sqlBlock.sqlList.get(0);
+		String sql = sqlBlock.getSqlList().get(0);
 		return Arrays.stream(SingleType.values()).filter(singleType -> singleType.check(sql)).findFirst().orElse(SingleType.other);
 	}
 
 	public enum SingleType {
-		select("^SELECT"), selectinto("^SELECT INTO"), cursor("OPEN|FOR"),
-		update("^UPDATE"), insert("^INSERT"), delete("^DELETE"),
+		selectinto("^SELECT INTO"), cursor("OPEN|FOR"),
+		select("^SELECT"), update("^UPDATE"), insert("^INSERT"), delete("^DELETE"),
 		many("BEGIN"), empty, other;
 		private Pattern pattern;
 
