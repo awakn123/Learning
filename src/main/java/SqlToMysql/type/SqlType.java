@@ -139,7 +139,10 @@ public class SqlType {
 	}
 
 	public static void assignOracleBlock(List<SqlBlock> blocks) {
-		blocks.stream().forEach(block -> getOracleType().stream().filter(sqlType -> sqlType.check(block)).forEach(sqlType -> block.setSqlType(sqlType)));
+		blocks.stream().forEach(block -> getOracleType().stream().filter(sqlType -> sqlType.check(block)).forEach(sqlType -> {
+			block.setSqlType(sqlType);
+			block.splitToObject();
+		}));
 	}
 
 	private boolean check(SqlBlock block) {

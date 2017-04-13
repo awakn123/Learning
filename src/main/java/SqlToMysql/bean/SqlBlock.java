@@ -60,7 +60,7 @@ public class SqlBlock {
 		this.start = start;
 		this.end = end;
 		this.sqlFile = sqlFile;
-		this.sqlList = Lists.newArrayList(sqlFile.getContentList().subList(start, end));
+		this.sqlList = Lists.newArrayList(sqlFile.getContentList().subList(start, end + 1));
 		this.sql = SqlUtils.mergeAndTrim(SqlUtils.stripComment(this.sqlList));
 	}
 

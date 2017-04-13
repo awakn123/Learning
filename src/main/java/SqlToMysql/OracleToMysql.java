@@ -1,9 +1,13 @@
 package SqlToMysql;
 
+import SqlToMysql.bean.OracleTrigger;
 import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.bean.SqlFile;
-import SqlToMysql.type.oracleSqlType.OracleProcedureType;
 import SqlToMysql.type.SqlType;
+import SqlToMysql.type.oracleSqlType.OracleTriggerType;
+import SqlToMysql.util.BeanUtils;
+import SqlToMysql.util.CounterMap;
+import SqlToMysql.util.SqlUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -37,10 +41,11 @@ public class OracleToMysql {
 	 */
 	public static void main(String[] args) throws IOException {
 		// 1~22
-		String rootPath = "./src/test/resource/e8_oracle/split/21 Procedure structure for.sql";
+		String rootPath = "./src/test/resource/e8_oracle/split/53 Triggers structure for table.sql";
 //		List<SqlFile> sqlFiles = readFile(rootPath);
 //		splitFileByComment(sqlFiles);
 //		getSqlFileComment(sqlFiles);
+//		OracleProcedureType.classifiedByContent(blocks);
 
 		// 读取并分析存储过程
 		List<SqlFile> sqlFiles = readFile(rootPath);
@@ -49,26 +54,17 @@ public class OracleToMysql {
 			blocks.addAll(sqlFile.splitFileByComment());
 		}
 		SqlType.assignOracleBlock(blocks);
-		Map<SqlType, List<SqlBlock>> typeToBlockMap = Maps.newHashMap();
-		blocks.stream().forEach(sqlBlock -> {
-			sqlBlock.splitToObject();
-			typeToBlockMap.putIfAbsent(sqlBlock.getSqlType(), new ArrayList<>());
-			typeToBlockMap.get(sqlBlock.getSqlType()).add(sqlBlock);
-		});
+		Map<SqlType, List<SqlBlock>> typeToBlockMap = SqlUtils.classfiedBySqlType(blocks);
+		List<OracleTrigger> triggers = OracleTriggerType.getInstance().createBeanBatch(typeToBlockMap.get(OracleTriggerType.getInstance()));
+		// 统计聚合值
+		CounterMap<String> counter = new CounterMap<>();
+		triggers.forEach(t -> counter.putOrIncrement(t.getTime() + " " + t.getEvent()));
+		counter.outputToConsole();
 
-		// 存储过程计算
-		Map<OracleProcedureType.SingleType, Integer> blockNumMap = Maps.newHashMap();
-		Map<OracleProcedureType.SingleType, List<SqlBlock>> blockMap = Maps.newHashMap();
-		typeToBlockMap.get(OracleProcedureType.getInstance()).forEach(sqlBlock -> {
-			OracleProcedureType.SingleType type = OracleProcedureType.getBlockType(sqlBlock);
-			int i = blockNumMap.getOrDefault(type, 0);
-			blockNumMap.put(type, i + 1);
-			blockMap.putIfAbsent(type, new ArrayList<SqlBlock>());
-			blockMap.get(type).add(sqlBlock);
-		});
-		blockNumMap.entrySet().stream().forEach(entry -> System.out.println(entry.getKey() + ":" + entry.getValue()));
-		System.out.println(blocks.size());
+		Map<String,List<OracleTrigger>> triggerMap = BeanUtils.beanToMap(triggers, t -> t.getTime() + " "+ t.getEvent());
+		System.out.println(triggerMap.get("BEFORE INSERT").get(0).getBlock().getSqlList());
 	}
+
 
 	private static void splitFileByComment(List<SqlFile> sqlFiles) {
 		List<SqlBlock> blocks = sqlFiles.get(0).splitFileByComment();

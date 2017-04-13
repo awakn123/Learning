@@ -1,11 +1,16 @@
 package SqlToMysql.type.oracleSqlType;
 
-import SqlToMysql.bean.SqlBlock;
-import SqlToMysql.type.SqlType;
 import SqlToMysql.bean.OracleProcedure;
+import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.inter.BeanCreate;
+import SqlToMysql.type.SqlType;
+import SqlToMysql.util.SqlUtils;
+import com.google.common.collect.Maps;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,6 +61,25 @@ public class OracleProcedureType extends SqlType implements BeanCreate<OraclePro
 	@Override
 	public OracleProcedure createBean(SqlBlock block) {
 		return null;
+	}
+
+	/**
+	 * 统计各个block的内容，判断存储过程数
+	 * @param blocks
+	 */
+	public static void classifiedByContent(List<SqlBlock> blocks) {
+		Map<SqlType, List<SqlBlock>> typeToBlockMap = SqlUtils.classfiedBySqlType(blocks);
+		Map<OracleProcedureType.SingleType, Integer> blockNumMap = Maps.newHashMap();
+		Map<OracleProcedureType.SingleType, List<SqlBlock>> blockMap = Maps.newHashMap();
+		typeToBlockMap.get(OracleProcedureType.getInstance()).forEach(sqlBlock -> {
+			OracleProcedureType.SingleType type = OracleProcedureType.getBlockType(sqlBlock);
+			int i = blockNumMap.getOrDefault(type, 0);
+			blockNumMap.put(type, i + 1);
+			blockMap.putIfAbsent(type, new ArrayList<SqlBlock>());
+			blockMap.get(type).add(sqlBlock);
+		});
+		blockNumMap.entrySet().stream().forEach(entry -> System.out.println(entry.getKey() + ":" + entry.getValue()));
+		System.out.println(blocks.size());
 	}
 
 	public enum SingleType {
