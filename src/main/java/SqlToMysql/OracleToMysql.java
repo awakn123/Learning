@@ -1,5 +1,9 @@
 package SqlToMysql;
 
+import SqlToMysql.bean.SqlBlock;
+import SqlToMysql.bean.SqlFile;
+import SqlToMysql.type.oracleSqlType.OracleProcedureType;
+import SqlToMysql.type.SqlType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -16,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static SqlToMysql.bean.SqlFile.readFile;
+
 public class OracleToMysql {
 
 	/**
@@ -31,29 +37,37 @@ public class OracleToMysql {
 	 */
 	public static void main(String[] args) throws IOException {
 		// 1~22
-		String rootPath = "./src/test/resource/mysql/E8_170300_orcl_mysql.sql";
-		List<SqlFile> sqlFiles = SqlFile.readFile(rootPath);
+		String rootPath = "./src/test/resource/e8_oracle/split/21 Procedure structure for.sql";
+//		List<SqlFile> sqlFiles = readFile(rootPath);
 //		splitFileByComment(sqlFiles);
 //		getSqlFileComment(sqlFiles);
 
 		// 读取并分析存储过程
-/*		List<SqlFile> sqlFiles = readFile(rootPath);
+		List<SqlFile> sqlFiles = readFile(rootPath);
 		List<SqlBlock> blocks = Lists.newArrayList();
 		for (SqlFile sqlFile : sqlFiles) {
-			blocks.addAll(sqlFile.splitFileToBlock("/"));
+			blocks.addAll(sqlFile.splitFileByComment());
 		}
 		SqlType.assignOracleBlock(blocks);
-		blocks.stream().forEach(sqlBlock -> sqlBlock.splitToObject());
-		Map<SqlType.SingleType, Integer> blockNumMap = Maps.newHashMap();
-		Map<SqlType.SingleType, List<SqlBlock>> blockMap = Maps.newHashMap();
+		Map<SqlType, List<SqlBlock>> typeToBlockMap = Maps.newHashMap();
 		blocks.stream().forEach(sqlBlock -> {
-			int i = blockNumMap.getOrDefault(sqlBlock.type, 0);
-			blockNumMap.put(sqlBlock.type, i + 1);
-			blockMap.putIfAbsent(sqlBlock.type, new ArrayList<SqlBlock>());
-			blockMap.get(sqlBlock.type).add(sqlBlock);
+			sqlBlock.splitToObject();
+			typeToBlockMap.putIfAbsent(sqlBlock.getSqlType(), new ArrayList<>());
+			typeToBlockMap.get(sqlBlock.getSqlType()).add(sqlBlock);
+		});
+
+		// 存储过程计算
+		Map<OracleProcedureType.SingleType, Integer> blockNumMap = Maps.newHashMap();
+		Map<OracleProcedureType.SingleType, List<SqlBlock>> blockMap = Maps.newHashMap();
+		typeToBlockMap.get(OracleProcedureType.getInstance()).forEach(sqlBlock -> {
+			OracleProcedureType.SingleType type = OracleProcedureType.getBlockType(sqlBlock);
+			int i = blockNumMap.getOrDefault(type, 0);
+			blockNumMap.put(type, i + 1);
+			blockMap.putIfAbsent(type, new ArrayList<SqlBlock>());
+			blockMap.get(type).add(sqlBlock);
 		});
 		blockNumMap.entrySet().stream().forEach(entry -> System.out.println(entry.getKey() + ":" + entry.getValue()));
-		System.out.println(blocks.size());*/
+		System.out.println(blocks.size());
 	}
 
 	private static void splitFileByComment(List<SqlFile> sqlFiles) {

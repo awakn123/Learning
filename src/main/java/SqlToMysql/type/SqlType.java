@@ -1,10 +1,11 @@
-package SqlToMysql;
+package SqlToMysql.type;
 
-import SqlToMysql.oracleSqlType.OracleFunction;
-import SqlToMysql.oracleSqlType.OracleProcedure;
+import SqlToMysql.bean.SqlBlock;
+import SqlToMysql.type.oracleSqlType.OracleFunctionType;
+import SqlToMysql.type.oracleSqlType.OracleProcedureType;
+import SqlToMysql.type.oracleSqlType.OracleTriggerType;
 import com.google.common.collect.Lists;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,7 +18,7 @@ public class SqlType {
 	private Pattern endPattern;
 	private Pattern namePattern;
 
-	public SqlType(Pattern headPattern, Pattern endPattern, Pattern namePattern, String name, String code) {
+	protected SqlType(Pattern headPattern, Pattern endPattern, Pattern namePattern, String name, String code) {
 		this.headPattern = headPattern;
 		this.endPattern = endPattern;
 		this.name = name;
@@ -107,8 +108,9 @@ public class SqlType {
 
 	public static List<SqlType> getOracleType() {
 		List<SqlType> types = Lists.newArrayList(
-				new OracleProcedure(),
-				new OracleFunction()
+				OracleProcedureType.getInstance(),
+				OracleFunctionType.getInstance(),
+				OracleTriggerType.getInstance()
 		);
 		return types;
 	}
@@ -158,37 +160,5 @@ public class SqlType {
 		}
 		Matcher m = this.namePattern.matcher(head);
 		return m.find() ? m.group() : null;
-	}
-
-	public SingleType getBlockType(SqlBlock sqlBlock) {
-		if (sqlBlock == null || sqlBlock.getSqlList() == null || sqlBlock.getSqlList().isEmpty()) {
-			return SingleType.empty;
-		}
-		if (sqlBlock.getSqlList().size() >= 2) {
-			return SingleType.many;
-		}
-		String sql = sqlBlock.getSqlList().get(0);
-		return Arrays.stream(SingleType.values()).filter(singleType -> singleType.check(sql)).findFirst().orElse(SingleType.other);
-	}
-
-	public enum SingleType {
-		selectinto("^SELECT INTO"), cursor("OPEN|FOR"),
-		select("^SELECT"), update("^UPDATE"), insert("^INSERT"), delete("^DELETE"),
-		many("BEGIN"), empty, other;
-		private Pattern pattern;
-
-		private SingleType() {
-		}
-
-		private SingleType(String p) {
-			this.pattern = Pattern.compile(p, Pattern.CASE_INSENSITIVE);
-		}
-
-		public boolean check(String sql) {
-			if (pattern == null)
-				return false;
-			Matcher m = this.pattern.matcher(sql);
-			return m.find();
-		}
 	}
 }

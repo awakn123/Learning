@@ -1,4 +1,4 @@
-package SqlToMysql;
+package SqlToMysql.bean;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -60,12 +60,11 @@ public class SqlFile {
 			String str = contentList.get(i);
 			if (!str.startsWith("--")) continue;
 			if (StringUtils.isNotBlank(str.replaceAll("-", ""))) continue;
-			if (!contentList.get(i - 1).startsWith("--")) {
-				if (start != null) {
-					blocks.add(new SqlBlock(this, start, i-1));
-				}
-				start = i;
+			if (i > 0 && contentList.get(i - 1).startsWith("--")) continue;
+			if (start != null) {
+				blocks.add(new SqlBlock(this, start, i-1));
 			}
+			start = i;
 		}
 		if (start != null && start + 1 < contentList.size()) {
 			blocks.add(new SqlBlock(this, start, contentList.size()-1));
@@ -91,7 +90,7 @@ public class SqlFile {
 						preStr += str.substring(0, str.indexOf(""));
 					}
 				}
-				int commentEnd = str.indexOf("");
+				int commentEnd = str.indexOf("*/");
 				if (commentEnd >= 0) {
 					isComment = false;
 					str = str.substring(commentEnd + 2);

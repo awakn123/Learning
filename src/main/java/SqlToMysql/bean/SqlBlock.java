@@ -1,5 +1,7 @@
-package SqlToMysql;
+package SqlToMysql.bean;
 
+import SqlToMysql.util.SqlUtils;
+import SqlToMysql.type.SqlType;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 
@@ -16,7 +18,6 @@ public class SqlBlock {
 	String name;
 	public String sql;
 	public String content;
-	SqlType.SingleType type;
 
 	public SqlType getSqlType() {
 		return sqlType;
@@ -74,7 +75,6 @@ public class SqlBlock {
 		this.content = this.sqlType.getContent(this);
 		sqlList = Lists.newArrayList(this.content.split(";"));
 		this.name = this.sqlType.getBlockName(this);
-		this.type = this.sqlType.getBlockType(this);
 	}
 
 	public boolean isAllComment() {
