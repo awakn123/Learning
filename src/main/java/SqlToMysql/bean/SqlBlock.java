@@ -73,7 +73,7 @@ public class SqlBlock {
 			return;
 		}
 		this.content = this.sqlType.getContent(this);
-		sqlList = Lists.newArrayList(this.content.split(";"));
+//		sqlList = Lists.newArrayList(this.content.split(";"));
 		this.name = this.sqlType.getBlockName(this);
 	}
 

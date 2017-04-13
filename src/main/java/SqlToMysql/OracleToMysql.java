@@ -6,19 +6,14 @@ import SqlToMysql.bean.SqlFile;
 import SqlToMysql.type.SqlType;
 import SqlToMysql.type.oracleSqlType.OracleTriggerType;
 import SqlToMysql.util.BeanUtils;
-import SqlToMysql.util.CounterMap;
 import SqlToMysql.util.SqlUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.sun.javafx.binding.StringFormatter;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -56,15 +51,45 @@ public class OracleToMysql {
 		SqlType.assignOracleBlock(blocks);
 		Map<SqlType, List<SqlBlock>> typeToBlockMap = SqlUtils.classfiedBySqlType(blocks);
 		List<OracleTrigger> triggers = OracleTriggerType.getInstance().createBeanBatch(typeToBlockMap.get(OracleTriggerType.getInstance()));
-		// 统计聚合值
-		CounterMap<String> counter = new CounterMap<>();
-		triggers.forEach(t -> counter.putOrIncrement(t.getTime() + " " + t.getEvent()));
-		counter.outputToConsole();
-
-		Map<String,List<OracleTrigger>> triggerMap = BeanUtils.beanToMap(triggers, t -> t.getTime() + " "+ t.getEvent());
-		System.out.println(triggerMap.get("BEFORE INSERT").get(0).getBlock().getSqlList());
+		splitTrigger(triggers);
 	}
 
+
+	private static void splitTrigger(List<OracleTrigger> triggers) throws IOException {
+		Map<String,List<OracleTrigger>> triggerMap = BeanUtils.beanToMap(triggers, t -> t.getTime() + " "+ t.getEvent());
+		List<SqlBlock> beforeInsertBlocks = Lists.newArrayList();
+		List<SqlBlock> otherBlocks = Lists.newArrayList();
+		List<String> autoIncreList = Lists.newArrayList("TriggerName,TableName,ColumnName");
+
+		Map<OracleTriggerType.TriggerEnum, List<OracleTrigger>> triggerEnumMap =
+				BeanUtils.beanToMap(triggerMap.get("BEFORE INSERT"), t ->	OracleTriggerType.TriggerEnum.getBySql(t.getSql()));
+		triggerEnumMap.get(OracleTriggerType.TriggerEnum.autoIncrement).stream().forEach(t -> {
+			autoIncreList.add(StringFormatter.format("%s,%s,%s",t.getName(), t.getTable(),OracleTriggerType.TriggerEnum.getAutoIncrementIdCol(t.getSql())).get());
+		});
+		triggerEnumMap.get(OracleTriggerType.TriggerEnum.other).stream().forEach(t -> {
+			beforeInsertBlocks.add(t.getBlock());
+		});
+		triggerMap.entrySet().stream().forEach(entry -> {
+			if ("BEFORE INSERT".equals(entry.getKey()) || entry.getValue() == null) {
+				return;
+			}
+			entry.getValue().stream().forEach(t -> otherBlocks.add(t.getBlock()));
+		});
+
+		System.out.println(beforeInsertBlocks.size());
+		System.out.println(otherBlocks.size());
+		System.out.println(autoIncreList.size());
+		SqlUtils.writeFile("./src/test/resource/e8_oracle/split/trigger", "beforeInsert.sql", beforeInsertBlocks);
+		SqlUtils.writeFile("./src/test/resource/e8_oracle/split/trigger", "other.sql", otherBlocks);
+		SqlUtils.writeFileStr("./src/test/resource/e8_oracle/split/trigger", "autoIncre.txt", autoIncreList);
+//		triggerEnumMap.entrySet().stream().forEach(entry -> System.out.println(entry.getKey() + ":" + entry.getValue().size()));
+		/*triggerEnumMap.get(OracleTriggerType.TriggerEnum.autoIncrement).stream().forEach(
+				t -> System.out.printf("(Table_Name=\'%s\' and column_Name=\'%s\') or\n",
+//						t.getName(),
+						t.getTable(),
+//						t.getSql()));
+						OracleTriggerType.TriggerEnum.getAutoIncrementIdCol(t.getSql())));*/
+	}
 
 	private static void splitFileByComment(List<SqlFile> sqlFiles) {
 		List<SqlBlock> blocks = sqlFiles.get(0).splitFileByComment();
@@ -85,27 +110,11 @@ public class OracleToMysql {
 		});
 		commentMap.entrySet().stream().forEach(entry -> {
 			try {
-				writeFile("./src/test/resource/e8_oracle/split", entry.getKey() + ".sql", entry.getValue());
+				SqlUtils.writeFile("./src/test/resource/e8_oracle/split", entry.getKey() + ".sql", entry.getValue());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		});
-	}
-
-	private static void writeFile(String pathStr, String name, List<SqlBlock> blocks) throws IOException {
-		Path path = Paths.get(pathStr + "/" + name);
-		File file = path.toFile();
-		if (file.exists()) {
-			file.delete();
-		}
-		List<String> sqls = Lists.newArrayList();
-		blocks.stream().forEach(sqlBlock -> {
-			if (sqlBlock.isAllComment()) {
-				return;
-			}
-			sqls.addAll(sqlBlock.getSqlList());
-		});
-		Files.write(path, sqls, StandardOpenOption.CREATE_NEW);
 	}
 
 	private static void getSqlFileComment(List<SqlFile> sqlFiles) {
@@ -122,15 +131,6 @@ public class OracleToMysql {
 			});
 		}
 		commentSet.stream().forEach(s -> System.out.println(s));
-	}
-
-	private static void writeFile(String writeFilePath, SqlFile fileContent, int begin, int end) throws IOException {
-		Path path = Paths.get(writeFilePath);
-		File file = path.toFile();
-		if (file.exists()) {
-			file.delete();
-		}
-		Files.write(path, fileContent.getContentList().subList(begin, end), StandardOpenOption.CREATE_NEW);
 	}
 
 

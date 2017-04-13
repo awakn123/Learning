@@ -1,11 +1,18 @@
 package SqlToMysql.util;
 
 import SqlToMysql.bean.SqlBlock;
+import SqlToMysql.bean.SqlFile;
 import SqlToMysql.type.SqlType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +20,7 @@ import java.util.Map;
 public class SqlUtils {
 	/**
 	 * 去除评论
+	 *
 	 * @param sqlList
 	 * @return
 	 */
@@ -53,6 +61,7 @@ public class SqlUtils {
 
 	/**
 	 * 合并List，去除空格与制表符
+	 *
 	 * @param sqlList
 	 * @return
 	 */
@@ -69,5 +78,45 @@ public class SqlUtils {
 			typeToBlockMap.get(sqlBlock.getSqlType()).add(sqlBlock);
 		});
 		return typeToBlockMap;
+	}
+
+
+	/**
+	 * 将sqlfile中的一段写出到文件
+	 *
+	 * @param writeFilePath
+	 * @param fileContent
+	 * @param begin
+	 * @param end
+	 * @throws IOException
+	 */
+	public static void writeFile(String writeFilePath, SqlFile fileContent, int begin, int end) throws IOException {
+		writeFileStr(writeFilePath, fileContent.getContentList().subList(begin, end));
+	}
+
+	public static void writeFile(String directoryPath, String name, List<SqlBlock> blocks) throws IOException {
+		List<String> sqls = Lists.newArrayList();
+		blocks.stream().forEach(sqlBlock -> {
+			if (sqlBlock.isAllComment()) {
+				return;
+			}
+			sqls.addAll(sqlBlock.getSqlList());
+		});
+		writeFileStr(directoryPath + "/" + name, sqls);
+	}
+
+	public static void writeFileStr(String directoryPath, String name, List<String> list) throws IOException {
+		writeFileStr(directoryPath + "/" + name, list);
+	}
+
+	public static void writeFileStr(String pathStr, List<String> list) throws IOException {
+		if (list == null || list.isEmpty())
+			return;
+		Path path = Paths.get(pathStr);
+		File file = path.toFile();
+		if (file.exists()) {
+			file.delete();
+		}
+		Files.write(path, list, StandardOpenOption.CREATE_NEW);
 	}
 }
