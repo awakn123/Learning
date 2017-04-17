@@ -1,9 +1,11 @@
 package SqlToMysql;
 
+import SqlToMysql.bean.OracleFunction;
 import SqlToMysql.bean.OracleTrigger;
 import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.bean.SqlFile;
 import SqlToMysql.type.SqlType;
+import SqlToMysql.type.oracleSqlType.OracleFunctionType;
 import SqlToMysql.type.oracleSqlType.OracleTriggerType;
 import SqlToMysql.util.BeanUtils;
 import SqlToMysql.util.SqlUtils;
@@ -12,6 +14,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.sun.javafx.binding.StringFormatter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +27,7 @@ import static SqlToMysql.bean.SqlFile.readFile;
 
 public class OracleToMysql {
 
+	private static final Logger log = LogManager.getLogger();
 	/**
 	 * SQL处理流程：
 	 * 读取SQL文件,按行数对应代码组成List
@@ -36,7 +41,8 @@ public class OracleToMysql {
 	 */
 	public static void main(String[] args) throws IOException {
 		// 1~22
-		String rootPath = "./src/test/resource/e8_oracle/split/53 Triggers structure for table.sql";
+		String rootPath = "./src/test/resource/e8_oracle/split/31 Function structure for.sql";
+		String writePath = "./src/test/resource/e8_oracle/split/programDone";
 //		List<SqlFile> sqlFiles = readFile(rootPath);
 //		splitFileByComment(sqlFiles);
 //		getSqlFileComment(sqlFiles);
@@ -50,8 +56,19 @@ public class OracleToMysql {
 		}
 		SqlType.assignOracleBlock(blocks);
 		Map<SqlType, List<SqlBlock>> typeToBlockMap = SqlUtils.classfiedBySqlType(blocks);
-		List<OracleTrigger> triggers = OracleTriggerType.getInstance().createBeanBatch(typeToBlockMap.get(OracleTriggerType.getInstance()));
-		splitTrigger(triggers);
+		List<OracleFunction> functions = OracleFunctionType.getInstance().createBeanBatch(typeToBlockMap.get(OracleFunctionType.getInstance()));
+		System.out.println(functions.size());
+		List<String> sqls = Lists.newArrayList();
+		for (OracleFunction of : functions) {
+			try {
+				sqls.add(OracleFunctionType.toMysqlSyntax(of));
+			} catch (Exception e){
+				log.error(of.getName(), e);
+			}
+		}
+		SqlUtils.writeFileStr(writePath, "function.sql", sqls);
+//		List<OracleTrigger> triggers = OracleTriggerType.getInstance().createBeanBatch(typeToBlockMap.get(OracleTriggerType.getInstance()));
+//		splitTrigger(triggers);
 	}
 
 

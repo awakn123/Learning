@@ -164,4 +164,5 @@ public class SqlType {
 		Matcher m = this.namePattern.matcher(head);
 		return m.find() ? m.group() : null;
 	}
+	
 }

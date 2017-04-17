@@ -18,7 +18,7 @@ public class OracleTriggerType extends SqlType  implements BeanCreate<OracleTrig
 		super(Pattern.compile("^CREATE OR REPLACE TRIGGER \"\\w+\"", Pattern.CASE_INSENSITIVE),
 				Pattern.compile(" +end(;)? +/$", Pattern.CASE_INSENSITIVE),
 				Pattern.compile("\"\\w+\""),
-				"创建存储过程", "procedure");
+				"创建触发器", "trigger");
 	}
 
 	public static final OracleTriggerType getInstance() {
