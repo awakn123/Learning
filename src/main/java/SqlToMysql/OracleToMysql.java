@@ -41,8 +41,8 @@ public class OracleToMysql {
 	 */
 	public static void main(String[] args) throws IOException {
 		// 1~22
-		String rootPath = "./src/test/resource/e8_oracle/split/31 Function structure for.sql";
-		String writePath = "./src/test/resource/e8_oracle/split/programDone";
+		String rootPath = "./src/test/sqlWork/e8_oracle/split/31 Function structure for.sql";
+		String writePath = "./src/test/sqlWork/e8_oracle/split/programDone";
 //		List<SqlFile> sqlFiles = readFile(rootPath);
 //		splitFileByComment(sqlFiles);
 //		getSqlFileComment(sqlFiles);

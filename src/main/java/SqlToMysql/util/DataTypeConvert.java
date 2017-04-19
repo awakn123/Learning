@@ -13,12 +13,14 @@ public class DataTypeConvert {
 		oracleToMysqlTypeMap.put("INT", "INT");
 		oracleToMysqlTypeMap.put("VARCHAR2", "VARCHAR");
 		oracleToMysqlTypeMap.put("FLOAT", "DECIMAL");
+		oracleToMysqlTypeMap.put("PIPELINED", "PIPELINED");
+		oracleToMysqlTypeMap.put("AGGREGATE", "AGGREGATE");
 	}
 
 	public static String oracleToMysql(String oracleType) {
 		String mysqlType = oracleToMysqlTypeMap.get(oracleType.toUpperCase());
-		if (mysqlType == null)
-			throw new RuntimeException("No such oracleType " + oracleType);
+//		if (mysqlType == null)
+//			throw new RuntimeException("No such oracleType " + oracleType);
 		return mysqlType;
 	}
 }

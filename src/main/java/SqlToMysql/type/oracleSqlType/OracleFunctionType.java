@@ -103,34 +103,51 @@ public class OracleFunctionType extends SqlType implements BeanCreate<OracleFunc
 	 * @return
 	 */
 	public static String toMysqlSyntax(OracleFunction func) {
-		if ("PIPELINED".equals(func.getReturnType().getType()) || "AGGREGATE".equals(func.getReturnType().getType())) {
-			throw new RuntimeException("无法转换此方法：" + func.getName());
-		}
 		StringBuffer sb = new StringBuffer();
+		sb.append("-- -------------------------------------------------------------------------------------------\n");
+		sb.append("-- ").append(func.getName()).append("\n");
+		if ("PIPELINED".equals(func.getReturnType().getType()) || "AGGREGATE".equals(func.getReturnType().getType())) {
+			sb.append("-- ReturnType: ").append(func.getReturnType().getType()).append("\n");
+			log.info("returnType:" + func.getReturnType().getType() + ", name:" + func.getName());
+		}
+		sb.append("-- -------------------------------------------------------------------------------------------\n");
 		sb.append("DELIMITER$$\n");//初始化
-		sb.append("CREATE FUNCTION IF NOT EXIST ").append(func.getName());//函数名修改
+		sb.append("CREATE FUNCTION IF NOT EXISTS ").append(func.getName());//函数名修改
 		if (func.getParams() == null || func.getParams().isEmpty()) {
 			sb.append("()\n");
 		} else {
 			List<String> paramStrs = Lists.newArrayList();
 			func.getParams().stream().forEach((param) -> {
-				StringBuffer psb = new StringBuffer();
-				String mysqlType = DataTypeConvert.oracleToMysql(param.getType());
-				psb.append(param.getName()).append(" ").append(mysqlType);
-				if ("VARCHAR".equals(mysqlType))
-					psb.append("(255)");
-				paramStrs.add(psb.toString());
+
+				paramStrs.add(param.toString());
 			});
 			sb.append("(").append(ListUtils.toString(paramStrs)).append(")\n");
 		}
-		sb.append("RETURNS ").append(func.getReturnType().getType()).append("\n");
+		String returnType = DataTypeConvert.oracleToMysql(func.getReturnType().getType());
+		sb.append("RETURNS ").append(returnType).append("\n");
 
-		Pattern bep = Pattern.compile("^BEGIN .* END( )?;( )?(/)?$", Pattern.CASE_INSENSITIVE);
-		if(!bep.matcher(func.getContent()).find())
-			throw new RuntimeException(func.getContent());
-		int endIdx = func.getContent().toUpperCase().lastIndexOf("END");
-		sb.append(func.getContent().substring(0, endIdx));
-		sb.append("$$\n");
+		boolean hasBegin = Pattern.compile("^BEGIN", Pattern.CASE_INSENSITIVE).matcher(func.getContent()).find();
+		boolean hasEnd = Pattern.compile("END( "+ func.getName() +")?( )?;( )?(/)?$", Pattern.CASE_INSENSITIVE).matcher(func.getContent()).find();;
+		if (hasBegin) {
+			int beginIdx = func.getContent().toUpperCase().indexOf("BEGIN");
+			sb.append("BEGIN\n");
+			if (func.getDelcareList() != null) {
+				for (OracleParam op : func.getDelcareList()) {
+					sb.append(op.toDeclareString()).append("\n");
+				}
+			}
+			if (hasEnd) {
+				int endIdx = func.getContent().toUpperCase().lastIndexOf("END");
+				sb.append(func.getContent().substring(beginIdx + 5, endIdx)).append("\n");
+				sb.append("END$$\n");
+			} else
+				sb.append(func.getContent().substring(beginIdx + 5));
+		} else
+			sb.append(func.getContent());
+		if(!hasBegin || !hasEnd) {
+//			throw new RuntimeException(func.getContent());
+			log.info("NOT BEGIN END, name:" + func.getName() + ", content:" + func.getContent());
+		}
 		sb.append("DELIMITER;\n");
 		return sb.toString();
 	}

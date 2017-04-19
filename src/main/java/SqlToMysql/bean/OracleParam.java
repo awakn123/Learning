@@ -1,5 +1,6 @@
 package SqlToMysql.bean;
 
+import SqlToMysql.util.DataTypeConvert;
 import SqlToMysql.util.ListUtils;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +17,7 @@ public class OracleParam {
 	private String type;//数据类型
 	private InOut inout;//传入传出
 	private String sql;//无法分类的
-	private String length;//数目
+	private String length;//参数长度
 	private String defaultValue;//默认值
 
 	private OracleParam(String sql){
@@ -96,11 +97,11 @@ public class OracleParam {
 			}
 
 			String length = null;
-			if (paramType.matches("\\(\\d+\\)")){
+			if (paramType.matches("\\w+\\(\\d+\\)")){
 				int leftIdx = paramType.indexOf("(");
 				int rightIdx = paramType.indexOf(")");
 				length = paramType.substring(leftIdx + 1 ,rightIdx);
-				paramType = paramType.substring(0, leftIdx + 1);
+				paramType = paramType.substring(0, leftIdx);
 			}
 			params.add(new OracleParam(paramName, paramType, paramInOut, length, defaultValue));
 		}
@@ -116,5 +117,35 @@ public class OracleParam {
 			else if (str.toUpperCase().equals("OUT")) return OUT;
 			else return IN;
 		}
+	}
+
+	public String toString() {
+		StringBuffer psb = new StringBuffer();
+		String mysqlType = DataTypeConvert.oracleToMysql(this.getType());
+		psb.append(this.getName()).append(" ");
+		psb.append(mysqlType);
+		if (inout != InOut.IN)
+			psb.append(inout);
+		if (StringUtils.isNotBlank(length)) {
+			psb.append("(").append(length).append(")");
+		} else if ("VARCHAR".equals(mysqlType))
+			psb.append("(255)");
+		return psb.toString();
+	}
+	public String toDeclareString() {
+		if (this.sql != null) {
+			return this.sql;
+		}
+		StringBuffer psb = new StringBuffer("declare ");
+		String mysqlType = DataTypeConvert.oracleToMysql(this.getType());
+		psb.append(this.getName()).append(" ").append(mysqlType != null ? mysqlType : this.getType());
+		if (StringUtils.isNotBlank(length)) {
+			psb.append("(").append(length).append(")");
+		} else if ("VARCHAR".equals(mysqlType))
+			psb.append("(255)");
+		if (StringUtils.isNotBlank(this.defaultValue))
+			psb.append(" default ").append(this.defaultValue);
+		psb.append(";");
+		return psb.toString();
 	}
 }
