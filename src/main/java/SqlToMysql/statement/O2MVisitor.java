@@ -148,27 +148,6 @@ public class O2MVisitor extends OracleOutputVisitor {
 
 	public boolean visit(OracleSelectHierachicalQueryClause x) {
 		counter.putOrIncrement("Hierachical");
-
-		print("'");
-		if (!(x.getConnectBy() instanceof SQLBinaryOpExpr)) {
-			return outContent(a->super.visit(a), x, "Hierachical");
-		}
-		SQLBinaryOpExpr opExpr = (SQLBinaryOpExpr)x.getConnectBy();
-
-		if (opExpr.getLeft() instanceof SQLBinaryOpExpr || opExpr.getOperator() != SQLBinaryOperator.Equality) {
-			return outContent(a->super.visit(a), x, "Hierachical");
-		}
-		opExpr.getLeft().accept(this);
-		print("','");
-		opExpr.getRight().accept(this);
-		print("',");
-
-		if (x.getStartWith() != null) {
-			SQLBinaryOpExpr startExpr = (SQLBinaryOpExpr)x.getStartWith();
-			startExpr.getRight().accept(this);
-		}
-		print(",");
-
 		return false;
 	}
 
@@ -203,16 +182,6 @@ public class O2MVisitor extends OracleOutputVisitor {
 	public boolean visit(OracleSelectQueryBlock x) {
 		okCounter.putOrIncrement("visit.OracleSelectQueryBlock");
 
-		if (x.getHierachicalQueryClause() != null) {
-			print("CALL getAllChildIds('");
-			x.getFrom().setParent(x);
-			x.getFrom().accept(this);
-			print("', ");
-			x.getHierachicalQueryClause().accept(this);
-			print("@RESULT);");
-			println();
-		}
-
 		print("SELECT ");
 
 		if (x.getHints().size() > 0) {
@@ -237,11 +206,39 @@ public class O2MVisitor extends OracleOutputVisitor {
 		}
 
 		println();
-		// 去掉了from dual
 		if (x.getFrom() != null) {
 			print("FROM ");
-			x.getFrom().setParent(x);
-			x.getFrom().accept(this);
+			if (x.getHierachicalQueryClause() == null || !(x.getFrom() instanceof SQLExprTableSource)) {
+				x.getFrom().setParent(x);
+				x.getFrom().accept(this);
+			} else {
+				SQLExprTableSource from = (SQLExprTableSource)x.getFrom();
+				print("(");
+				// hiera查询开始
+				print("select tl.lv,t.* from (select @id idlist, @lv:=@lv+1 lv,");
+				// 子查询开始
+				print("(select @id:=group_concat(");
+				SQLBinaryOpExpr connectBy = (SQLBinaryOpExpr)x.getHierachicalQueryClause().getConnectBy();
+				connectBy.getLeft().accept(this);
+				print(" separator ',') from ");
+				from.getExpr().accept(this);
+				print(" where find_in_set(");
+				connectBy.getRight().accept(this);
+				print(",@id)) sub");
+				// 子查询结束
+				print(" from ");
+				from.getExpr().accept(this);
+				print(",(select @id:=");
+				SQLBinaryOpExpr startExpr = (SQLBinaryOpExpr)x.getHierachicalQueryClause().getStartWith();
+				startExpr.getRight().accept(this);
+				print(",@lv:=0) vars where @id is not null) tl,");
+				from.getExpr().accept(this);
+				print(" t where find_in_set(t.id,tl.idlist)");
+				// hiera查询结束
+				print(")");
+				print(' ');
+				print(x.getFrom().getAlias() != null ? x.getFrom().getAlias() : "hiera");
+			}
 		}
 
 		if (x.getWhere() != null) {
@@ -249,13 +246,6 @@ public class O2MVisitor extends OracleOutputVisitor {
 			print("WHERE ");
 			x.getWhere().setParent(x);
 			x.getWhere().accept(this);
-		}
-
-		if (x.getHierachicalQueryClause() != null) {
-			SQLBinaryOpExpr opExpr = (SQLBinaryOpExpr)x.getHierachicalQueryClause().getConnectBy();
-			print(" AND FIND_IN_SET(");
-			opExpr.getLeft().accept(this);
-			print(", @RESULT)");
 		}
 
 		if (x.getGroupBy() != null) {
@@ -541,6 +531,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 		} else if (x.getExpr() instanceof SQLBinaryOpExpr) {
 			SQLBinaryOpExpr expr = ((SQLBinaryOpExpr)x.getExpr());
 			if (SQLBinaryOperator.Assignment.equals(expr.getOperator())) {
+				print("set ");
 				return super.visit(x);
 			}
 		}
@@ -965,9 +956,16 @@ public class O2MVisitor extends OracleOutputVisitor {
 				return super.visit(x);
 			else if (x.getParameters().size() > 2) {
 				if (x.getParameters().get(2).toString().equals("1")) {
-					x.setMethodName("locate");
+					print("CHAR_LENGTH(SUBSTRING_INDEX(");
 					x.getParameters().remove(2);
-					return super.visit(x);
+					for (int i = 0, size = x.getParameters().size(); i < size; ++i) {
+						if (i != 0) {
+							print(", ");
+						}
+						x.getParameters().get(i).accept(this);
+					}
+					print(")) + 1");
+					return false;
 				}
 			}
 		} else if (lowerMethodName.equals("substr"))

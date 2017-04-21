@@ -141,7 +141,10 @@ public class OracleFunctionType extends SqlType implements BeanCreate<OracleFunc
 			sb.append("(").append(ListUtils.toString(paramStrs)).append(")\n");
 		}
 		String returnType = DataTypeConvert.oracleToMysql(func.getReturnType().getType());
-		sb.append("RETURNS ").append(returnType).append("\n");
+		sb.append("RETURNS ").append(returnType);
+		if (returnType != null && "varchar".equals(returnType.toLowerCase()))
+			sb.append("(255)");
+		sb.append("\n");
 
 		if (func.hasBegin()) {
 			sb.append("BEGIN\n");
@@ -165,12 +168,12 @@ public class OracleFunctionType extends SqlType implements BeanCreate<OracleFunc
 						//判断处理hierachical(start with...)
 
 						//去除from dual
-						/*int idx = lowerOut.indexOf("from dual");
+						int idx = lowerOut.indexOf("from dual");
 						if (idx >= 0) {
 							sqlOut = new StringBuffer(out);
 							sqlOut.delete(idx, idx+9);
 							out = sqlOut.toString();
-						}*/
+						}
 						out = StringUtils.replaceAll(out, ";", ";\n");
 						sb.append(out).append(";\n");
 					} else
