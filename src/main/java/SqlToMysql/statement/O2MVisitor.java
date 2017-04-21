@@ -1,10 +1,7 @@
 package SqlToMysql.statement;
 
 import SqlToMysql.util.CounterMap;
-import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.SQLHint;
-import com.alibaba.druid.sql.ast.SQLObject;
-import com.alibaba.druid.sql.ast.SQLStatement;
+import com.alibaba.druid.sql.ast.*;
 import com.alibaba.druid.sql.ast.expr.*;
 import com.alibaba.druid.sql.ast.statement.*;
 import com.alibaba.druid.sql.dialect.oracle.ast.OracleDataTypeIntervalDay;
@@ -30,10 +27,13 @@ import com.alibaba.druid.sql.dialect.oracle.ast.stmt.OracleMultiInsertStatement.
 import com.alibaba.druid.sql.dialect.oracle.ast.stmt.OracleMultiInsertStatement.ConditionalInsertClauseItem;
 import com.alibaba.druid.sql.dialect.oracle.ast.stmt.OracleMultiInsertStatement.InsertIntoClause;
 import com.alibaba.druid.sql.dialect.oracle.visitor.OracleOutputVisitor;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 // MySqlOutputVisitor
 // OracleOutputVisitor
@@ -43,6 +43,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 
 	public static CounterMap<String> counter = new CounterMap<String>();
 	public static CounterMap<String> okCounter = new CounterMap<String>();
+	public static Map<String, List<String>> errorMsgs = Maps.newHashMap();
 	public O2MVisitor(Appendable appender) {
 		super(appender, true);
 	}
@@ -52,11 +53,12 @@ public class O2MVisitor extends OracleOutputVisitor {
 	}
 
 
-	private <T> boolean outContent(Function<T, Boolean> f, T x) {
+	private <T> boolean outContent(Function<T, Boolean> f, T x, String key) {
 		StringBuffer out = (StringBuffer) this.appender;
 		int start = out.length();
 		boolean result = f.apply(x);
-		System.out.println(out.substring(start));
+		errorMsgs.putIfAbsent(key, Lists.newArrayList());
+		errorMsgs.get(key). add(out.substring(start));
 		return result;
 	}
 
@@ -145,8 +147,29 @@ public class O2MVisitor extends OracleOutputVisitor {
 	}
 
 	public boolean visit(OracleSelectHierachicalQueryClause x) {
-		counter.putOrIncrement("visit.OracleSelectHierachicalQueryClause");
-		return super.visit(x);
+		counter.putOrIncrement("Hierachical");
+
+		print("'");
+		if (!(x.getConnectBy() instanceof SQLBinaryOpExpr)) {
+			return outContent(a->super.visit(a), x, "Hierachical");
+		}
+		SQLBinaryOpExpr opExpr = (SQLBinaryOpExpr)x.getConnectBy();
+
+		if (opExpr.getLeft() instanceof SQLBinaryOpExpr || opExpr.getOperator() != SQLBinaryOperator.Equality) {
+			return outContent(a->super.visit(a), x, "Hierachical");
+		}
+		opExpr.getLeft().accept(this);
+		print("','");
+		opExpr.getRight().accept(this);
+		print("',");
+
+		if (x.getStartWith() != null) {
+			SQLBinaryOpExpr startExpr = (SQLBinaryOpExpr)x.getStartWith();
+			startExpr.getRight().accept(this);
+		}
+		print(",");
+
+		return false;
 	}
 
 	public boolean visit(OracleSelectJoin x) {
@@ -179,7 +202,72 @@ public class O2MVisitor extends OracleOutputVisitor {
 
 	public boolean visit(OracleSelectQueryBlock x) {
 		okCounter.putOrIncrement("visit.OracleSelectQueryBlock");
-		return super.visit(x);
+
+		if (x.getHierachicalQueryClause() != null) {
+			print("CALL getAllChildIds('");
+			x.getFrom().setParent(x);
+			x.getFrom().accept(this);
+			print("', ");
+			x.getHierachicalQueryClause().accept(this);
+			print("@RESULT);");
+			println();
+		}
+
+		print("SELECT ");
+
+		if (x.getHints().size() > 0) {
+			printAndAccept(x.getHints(), ", ");
+			print(' ');
+		}
+
+		if (SQLSetQuantifier.ALL == x.getDistionOption()) {
+			print("ALL ");
+		} else if (SQLSetQuantifier.DISTINCT == x.getDistionOption()) {
+			print("DISTINCT ");
+		} else if (SQLSetQuantifier.UNIQUE == x.getDistionOption()) {
+			print("UNIQUE ");
+		}
+
+		printSelectList(x.getSelectList());
+
+		if (x.getInto() != null) {
+			println();
+			print("INTO ");
+			x.getInto().accept(this);
+		}
+
+		println();
+		// 去掉了from dual
+		if (x.getFrom() != null) {
+			print("FROM ");
+			x.getFrom().setParent(x);
+			x.getFrom().accept(this);
+		}
+
+		if (x.getWhere() != null) {
+			println();
+			print("WHERE ");
+			x.getWhere().setParent(x);
+			x.getWhere().accept(this);
+		}
+
+		if (x.getHierachicalQueryClause() != null) {
+			SQLBinaryOpExpr opExpr = (SQLBinaryOpExpr)x.getHierachicalQueryClause().getConnectBy();
+			print(" AND FIND_IN_SET(");
+			opExpr.getLeft().accept(this);
+			print(", @RESULT)");
+		}
+
+		if (x.getGroupBy() != null) {
+			println();
+			x.getGroupBy().accept(this);
+		}
+
+		if (x.getModelClause() != null) {
+			println();
+			x.getModelClause().accept(this);
+		}
+		return false;
 
 	}
 
@@ -458,7 +546,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 		}
 		okCounter.decrement("visit.OracleExprStatement");
 		counter.putOrIncrement("visit.OracleExprStatement");
-		return super.visit(x);
+		return outContent(a->super.visit(a), x, "OracleExprStatement");
 	}
 
 	@Override
@@ -477,19 +565,19 @@ public class O2MVisitor extends OracleOutputVisitor {
 
 	@Override
 	public boolean visit(com.alibaba.druid.sql.dialect.oracle.ast.stmt.OracleExceptionStatement.Item x) {
-		counter.putOrIncrement("visit.com.alibaba.druid.sql.dialect.oracle.ast.stmt.OracleExceptionStatement.Item");
+		counter.putOrIncrement("Exception When");
 		return super.visit(x);
 	}
 
 	@Override
 	public boolean visit(OracleExceptionStatement x) {
-		counter.putOrIncrement("visit.OracleExceptionStatement");
+		counter.putOrIncrement("Exception");
 		return super.visit(x);
 	}
 
 	@Override
 	public boolean visit(OracleArgumentExpr x) {
-		counter.putOrIncrement("visit.OracleArgumentExpr");
+		counter.putOrIncrement("=>expression");
 		return super.visit(x);
 	}
 
@@ -904,6 +992,6 @@ public class O2MVisitor extends OracleOutputVisitor {
 
 		okCounter.decrement("visit.SQLMethodInvokeExpr");
 		counter.putOrIncrement("visit.SQLMethodInvokeExpr");
-		return super.visit(x);
+		return outContent(a->super.visit(a), x, "SQLMethodInvokeExpr");
 	}
 }

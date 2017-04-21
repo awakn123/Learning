@@ -40,9 +40,33 @@ public class MapListUtils {
 		return sum;
 	}
 
-	public static <K, V> String toSizeString(Map<K, List<V>> map) {
+	/**
+	 * 输出map中各key对应的list的size大小;
+	 * @param map
+	 * @param <K>
+	 * @param <V>
+	 * @return
+	 */
+	public static <K, V> String toSizeOutput(Map<K, List<V>> map) {
 		StringBuffer sb = new StringBuffer();
 		map.entrySet().stream().forEach(e -> sb.append("key:").append(e.getKey()).append(", size:").append("size:").append(e.getValue().size()).append("\n"));
+		return sb.toString();
+	}
+
+
+	/**
+	 * 输出map
+	 * @param map
+	 * @param <K>
+	 * @param <V>
+	 * @return
+	 */
+	public static <K, V> String toOutput(Map<K, List<V>> map) {
+		StringBuffer sb = new StringBuffer();
+		map.entrySet().stream().forEach(e -> {
+			sb.append("key:").append(e.getKey()).append("\n");
+			e.getValue().stream().forEach(v -> sb.append("\t").append(v.toString()).append("\n"));
+		});
 		return sb.toString();
 	}
 }

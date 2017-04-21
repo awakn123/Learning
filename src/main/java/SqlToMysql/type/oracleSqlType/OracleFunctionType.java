@@ -127,8 +127,9 @@ public class OracleFunctionType extends SqlType implements BeanCreate<OracleFunc
 			log.info("returnType:" + func.getReturnType().getType() + ", name:" + func.getName());
 		}
 		sb.append("-- -------------------------------------------------------------------------------------------\n");
+		sb.append("DROP FUNCTION IF EXISTS ").append(func.getName()).append(";\n");//初始化
 		sb.append("DELIMITER$$\n");//初始化
-		sb.append("CREATE FUNCTION IF NOT EXISTS ").append(func.getName());//函数名修改
+		sb.append("CREATE FUNCTION ").append(func.getName());//函数名修改
 		if (func.getParams() == null || func.getParams().isEmpty()) {
 			sb.append("()\n");
 		} else {
@@ -159,12 +160,17 @@ public class OracleFunctionType extends SqlType implements BeanCreate<OracleFunc
 						StringBuffer sqlOut = new StringBuffer();
 						s.accept(new O2MVisitor(sqlOut, false));
 						String out = SqlUtils.mergeAndTrim(StringUtils.replaceAll(sqlOut.toString(), "\\n", " "));
-						int idx = out.toLowerCase().indexOf("from dual");
+						String lowerOut = out.toLowerCase();
+
+						//判断处理hierachical(start with...)
+
+						//去除from dual
+						/*int idx = lowerOut.indexOf("from dual");
 						if (idx >= 0) {
 							sqlOut = new StringBuffer(out);
 							sqlOut.delete(idx, idx+9);
 							out = sqlOut.toString();
-						}
+						}*/
 						out = StringUtils.replaceAll(out, ";", ";\n");
 						sb.append(out).append(";\n");
 					} else
