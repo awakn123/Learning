@@ -5,10 +5,16 @@ import SqlToMysql.bean.OracleParam;
 import SqlToMysql.bean.OracleReturn;
 import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.inter.BeanCreate;
+import SqlToMysql.statement.O2MVisitor;
+import SqlToMysql.statement.SqlParser;
+import SqlToMysql.statement.SqlStmt;
 import SqlToMysql.type.SqlType;
 import SqlToMysql.util.DataTypeConvert;
 import SqlToMysql.util.ListUtils;
+import SqlToMysql.util.SqlUtils;
+import com.alibaba.druid.sql.ast.SQLStatement;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -87,9 +93,19 @@ public class OracleFunctionType extends SqlType implements BeanCreate<OracleFunc
 				declares = OracleParam.createOracleParam(declareStr, OracleParam.DECLARE_PARAM);
 			}
 
-			// 拿到剩下的部分，塞到content中
+			// 拿到剩下的部分，做为content,进行下一步处理
 			String content = beginIndex > 0 ? sql.substring(beginIndex, sql.length()) : sql;
-			return new OracleFunction(name, params, returnType, declares, content, block);
+			boolean hasBegin = Pattern.compile("^BEGIN", Pattern.CASE_INSENSITIVE).matcher(content).find();
+			boolean hasEnd = Pattern.compile("END( " + name + ")?( )?;( )?(/)?$", Pattern.CASE_INSENSITIVE).matcher(content).find();
+			if (hasBegin && hasEnd) {
+				int beginIdx = content.toUpperCase().indexOf("BEGIN");
+				int endIdx = content.toUpperCase().lastIndexOf("END");
+				content = content.substring(beginIdx + 5, endIdx);
+//				List<SQLStatement> list = SQLUtils.parseStatements(content, JdbcConstants.ORACLE);
+				List<SqlStmt> list = SqlParser.parse(content, name);
+				return new OracleFunction(name, params, returnType, declares, list, block, hasBegin, hasEnd);
+			} else
+				return new OracleFunction(name, params, returnType, declares, content, block, hasBegin, hasEnd);
 		} catch (Exception e) {
 			log.error("读取block出错，blockName:" + name, e);
 			return null;
@@ -126,25 +142,43 @@ public class OracleFunctionType extends SqlType implements BeanCreate<OracleFunc
 		String returnType = DataTypeConvert.oracleToMysql(func.getReturnType().getType());
 		sb.append("RETURNS ").append(returnType).append("\n");
 
-		boolean hasBegin = Pattern.compile("^BEGIN", Pattern.CASE_INSENSITIVE).matcher(func.getContent()).find();
-		boolean hasEnd = Pattern.compile("END( "+ func.getName() +")?( )?;( )?(/)?$", Pattern.CASE_INSENSITIVE).matcher(func.getContent()).find();;
-		if (hasBegin) {
-			int beginIdx = func.getContent().toUpperCase().indexOf("BEGIN");
+		if (func.hasBegin()) {
 			sb.append("BEGIN\n");
 			if (func.getDelcareList() != null) {
 				for (OracleParam op : func.getDelcareList()) {
 					sb.append(op.toDeclareString()).append("\n");
 				}
 			}
-			if (hasEnd) {
-				int endIdx = func.getContent().toUpperCase().lastIndexOf("END");
-				sb.append(func.getContent().substring(beginIdx + 5, endIdx)).append("\n");
+			if (func.hasEnd()) {
+				func.getSqlList().stream().forEach(sql -> {
+					if (sql.getStatement() instanceof SQLStatement) {
+						SQLStatement s = (SQLStatement) sql.getStatement();
+
+//						String out = SQLUtils.toSQLString(s, JdbcConstants.MYSQL);
+//						out = StringUtils.replaceAll(out, "\\n", "");
+						StringBuffer sqlOut = new StringBuffer();
+						s.accept(new O2MVisitor(sqlOut, false));
+						String out = SqlUtils.mergeAndTrim(StringUtils.replaceAll(sqlOut.toString(), "\\n", " "));
+						int idx = out.toLowerCase().indexOf("from dual");
+						if (idx >= 0) {
+							sqlOut = new StringBuffer(out);
+							sqlOut.delete(idx, idx+9);
+							out = sqlOut.toString();
+						}
+						out = StringUtils.replaceAll(out, ";", ";\n");
+						sb.append(out).append(";\n");
+					} else
+						sb.append(sql.getStatement());
+//					sql.accept();
+				});
 				sb.append("END$$\n");
-			} else
+			} else {
+				int beginIdx = func.getContent().toUpperCase().indexOf("BEGIN");
 				sb.append(func.getContent().substring(beginIdx + 5));
+			}
 		} else
 			sb.append(func.getContent());
-		if(!hasBegin || !hasEnd) {
+		if (!func.hasBegin() || !func.hasEnd()) {
 //			throw new RuntimeException(func.getContent());
 			log.info("NOT BEGIN END, name:" + func.getName() + ", content:" + func.getContent());
 		}

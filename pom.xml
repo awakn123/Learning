@@ -45,9 +45,9 @@
 
 		<!-- sql parser-->
 		<dependency>
-			<groupId>com.github.jsqlparser</groupId>
-			<artifactId>jsqlparser</artifactId>
-			<version>1.0</version>
+			<groupId>com.alibaba</groupId>
+			<artifactId>druid</artifactId>
+			<version>1.0.9</version>
 		</dependency>
 	</dependencies>
 

@@ -67,10 +67,13 @@ public class SqlUtils {
 	 */
 	public static String mergeAndTrim(List<String> sqlList) {
 		String sql = sqlList.stream().reduce((str, one) -> str = str + " " + one).orElse("");
+		return mergeAndTrim(sql);
+	}
+
+	public static String mergeAndTrim(String sql) {
 		String noTab = StringUtils.replaceAll(sql, "\t", " ");
 		return StringUtils.replaceAll(noTab, " +", " ");
 	}
-
 	public static Map<SqlType, List<SqlBlock>> classfiedBySqlType(List<SqlBlock> blocks) {
 		Map<SqlType, List<SqlBlock>> typeToBlockMap = Maps.newHashMap();
 		blocks.stream().forEach(sqlBlock -> {
@@ -119,4 +122,5 @@ public class SqlUtils {
 		}
 		Files.write(path, list, StandardOpenOption.CREATE_NEW);
 	}
+
 }

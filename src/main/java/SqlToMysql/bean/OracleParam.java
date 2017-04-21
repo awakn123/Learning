@@ -124,7 +124,7 @@ public class OracleParam {
 		String mysqlType = DataTypeConvert.oracleToMysql(this.getType());
 		psb.append(this.getName()).append(" ");
 		psb.append(mysqlType);
-		if (inout != InOut.IN)
+		if (inout != InOut.IN && inout != null)
 			psb.append(inout);
 		if (StringUtils.isNotBlank(length)) {
 			psb.append("(").append(length).append(")");

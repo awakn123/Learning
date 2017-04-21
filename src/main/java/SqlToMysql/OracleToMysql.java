@@ -4,11 +4,15 @@ import SqlToMysql.bean.OracleFunction;
 import SqlToMysql.bean.OracleTrigger;
 import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.bean.SqlFile;
+import SqlToMysql.statement.O2MVisitor;
+import SqlToMysql.statement.SqlStmt;
 import SqlToMysql.type.SqlType;
 import SqlToMysql.type.oracleSqlType.OracleFunctionType;
 import SqlToMysql.type.oracleSqlType.OracleTriggerType;
-import SqlToMysql.util.BeanUtils;
+import SqlToMysql.util.CounterMap;
+import SqlToMysql.util.MapListUtils;
 import SqlToMysql.util.SqlUtils;
+import com.alibaba.druid.sql.ast.SQLStatement;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -24,10 +28,12 @@ import java.util.Map;
 import java.util.Set;
 
 import static SqlToMysql.bean.SqlFile.readFile;
+import static SqlToMysql.util.MapListUtils.beanToMap;
 
 public class OracleToMysql {
 
 	private static final Logger log = LogManager.getLogger();
+
 	/**
 	 * SQL处理流程：
 	 * 读取SQL文件,按行数对应代码组成List
@@ -41,7 +47,7 @@ public class OracleToMysql {
 	 */
 	public static void main(String[] args) throws IOException {
 		// 1~22
-		String rootPath = "./src/test/sqlWork/e8_oracle/split/31 Function structure for.sql";
+		String rootPath = "./src/test/sqlWork/e8_oracle/split/test/FunctionChange.sql";
 		String writePath = "./src/test/sqlWork/e8_oracle/split/programDone";
 //		List<SqlFile> sqlFiles = readFile(rootPath);
 //		splitFileByComment(sqlFiles);
@@ -58,7 +64,32 @@ public class OracleToMysql {
 		Map<SqlType, List<SqlBlock>> typeToBlockMap = SqlUtils.classfiedBySqlType(blocks);
 		List<OracleFunction> functions = OracleFunctionType.getInstance().createBeanBatch(typeToBlockMap.get(OracleFunctionType.getInstance()));
 		System.out.println(functions.size());
+		CounterMap<String> cm = new CounterMap<>();
+		Map<String, List<SqlStmt>> map = Maps.newHashMap();
+		functions.stream().forEach(func -> {
+			if (func.getSqlList() == null) {
+				System.out.println("null:" + func.getName());
+				return;
+			}
+			func.getSqlList().forEach(sql -> cm.putOrIncrement(sql == null && sql.getStatement() instanceof String ? "string" : "statement"));
+			Map<String, List<SqlStmt>> m = MapListUtils.beanToMap(func.getSqlList(), sqlStmt -> {
+				if (sqlStmt == null) return "null";
+				SqlStmt s = (SqlStmt) sqlStmt;
+				if (s.getStatement() instanceof SQLStatement) {
+					SQLStatement stmt = (SQLStatement) s.getStatement();
+					return stmt.getClass().getName();
+				} else {
+					System.out.println("error:"+s.getErrorMsg());
+					return "string";
+				}
+			});
+			MapListUtils.reduce(map, m);
+		});
+		System.out.println("statementNum:" + cm.getValue("statement"));
+		System.out.println("stringNum:" + cm.getValue("string"));
+		System.out.println(MapListUtils.toSizeString(map));
 		List<String> sqls = Lists.newArrayList();
+		System.out.println("------------------------------------------------------------------------------");
 		for (OracleFunction of : functions) {
 			try {
 				sqls.add(OracleFunctionType.toMysqlSyntax(of));
@@ -66,22 +97,26 @@ public class OracleToMysql {
 				log.error(of.getName(), e);
 			}
 		}
+		System.out.println("------------------------------------------------------------------------------");
 		SqlUtils.writeFileStr(writePath, "function.sql", sqls);
+		O2MVisitor.counter.outputToConsole();
+		System.out.println(O2MVisitor.counter.size());
+
 //		List<OracleTrigger> triggers = OracleTriggerType.getInstance().createBeanBatch(typeToBlockMap.get(OracleTriggerType.getInstance()));
 //		splitTrigger(triggers);
 	}
 
 
 	private static void splitTrigger(List<OracleTrigger> triggers) throws IOException {
-		Map<String,List<OracleTrigger>> triggerMap = BeanUtils.beanToMap(triggers, t -> t.getTime() + " "+ t.getEvent());
+		Map<String, List<OracleTrigger>> triggerMap = beanToMap(triggers, t -> t.getTime() + " " + t.getEvent());
 		List<SqlBlock> beforeInsertBlocks = Lists.newArrayList();
 		List<SqlBlock> otherBlocks = Lists.newArrayList();
 		List<String> autoIncreList = Lists.newArrayList("TriggerName,TableName,ColumnName");
 
 		Map<OracleTriggerType.TriggerEnum, List<OracleTrigger>> triggerEnumMap =
-				BeanUtils.beanToMap(triggerMap.get("BEFORE INSERT"), t ->	OracleTriggerType.TriggerEnum.getBySql(t.getSql()));
+				beanToMap(triggerMap.get("BEFORE INSERT"), t -> OracleTriggerType.TriggerEnum.getBySql(t.getSql()));
 		triggerEnumMap.get(OracleTriggerType.TriggerEnum.autoIncrement).stream().forEach(t -> {
-			autoIncreList.add(StringFormatter.format("%s,%s,%s",t.getName(), t.getTable(),OracleTriggerType.TriggerEnum.getAutoIncrementIdCol(t.getSql())).get());
+			autoIncreList.add(StringFormatter.format("%s,%s,%s", t.getName(), t.getTable(), OracleTriggerType.TriggerEnum.getAutoIncrementIdCol(t.getSql())).get());
 		});
 		triggerEnumMap.get(OracleTriggerType.TriggerEnum.other).stream().forEach(t -> {
 			beforeInsertBlocks.add(t.getBlock());
