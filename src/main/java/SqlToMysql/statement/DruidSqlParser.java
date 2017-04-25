@@ -14,9 +14,9 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class SqlParser {
+public final class DruidSqlParser {
 	static final List<AbstractStatementType> astlist = Lists.newArrayList();
-	private static final Logger log = LogManager.getLogger(SqlParser.class);
+	private static final Logger log = LogManager.getLogger(DruidSqlParser.class);
 
 	public static List<SqlStmt> parse(String content, String name) {
 		List<String> sqlList = Lists.newArrayList(content.split(";"));

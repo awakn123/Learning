@@ -4,25 +4,23 @@ import SqlToMysql.bean.OracleFunction;
 import SqlToMysql.bean.OracleParam;
 import SqlToMysql.bean.OracleReturn;
 import SqlToMysql.bean.SqlBlock;
-import SqlToMysql.inter.BeanCreate;
-import SqlToMysql.statement.O2MVisitor;
-import SqlToMysql.statement.SqlParser;
+import SqlToMysql.inter.TypeService;
+import SqlToMysql.statement.SqlParserService;
 import SqlToMysql.statement.SqlStmt;
 import SqlToMysql.type.SqlType;
 import SqlToMysql.util.DataTypeConvert;
 import SqlToMysql.util.ListUtils;
-import SqlToMysql.util.SqlUtils;
-import com.alibaba.druid.sql.ast.SQLStatement;
+import com.alibaba.druid.sql.visitor.SQLASTVisitor;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class OracleFunctionType extends SqlType implements BeanCreate<OracleFunction> {
+public class OracleFunctionType extends SqlType implements TypeService<OracleFunction> {
 
 	private static final Logger log = LogManager.getLogger(OracleFunctionType.class);
 	private static final OracleFunctionType instance = new OracleFunctionType();
@@ -54,7 +52,7 @@ public class OracleFunctionType extends SqlType implements BeanCreate<OracleFunc
 	 * @return
 	 */
 	@Override
-	public OracleFunction createBean(SqlBlock block) {
+	public OracleFunction createBean(SqlBlock block, SqlParserService parserService) {
 		String sql = block.sql;
 		String name = this.getBlockName(block).replaceAll("\"", "");
 		sql = this.getHeadPattern().matcher(sql).replaceAll("").trim();
@@ -102,7 +100,8 @@ public class OracleFunctionType extends SqlType implements BeanCreate<OracleFunc
 				int endIdx = content.toUpperCase().lastIndexOf("END");
 				content = content.substring(beginIdx + 5, endIdx);
 //				List<SQLStatement> list = SQLUtils.parseStatements(content, JdbcConstants.ORACLE);
-				List<SqlStmt> list = SqlParser.parse(content, name);
+//				List<SqlStmt> list = DruidSqlParser.parse(content, name);
+				List<SqlStmt> list = parserService.parse(content, name);
 				return new OracleFunction(name, params, returnType, declares, list, block, hasBegin, hasEnd);
 			} else
 				return new OracleFunction(name, params, returnType, declares, content, block, hasBegin, hasEnd);
@@ -118,7 +117,7 @@ public class OracleFunctionType extends SqlType implements BeanCreate<OracleFunc
 	 * @param func
 	 * @return
 	 */
-	public static String toMysqlSyntax(OracleFunction func) {
+	public String toMysqlSyntax(OracleFunction func, Function<Appendable, SQLASTVisitor> f) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("-- -------------------------------------------------------------------------------------------\n");
 		sb.append("-- ").append(func.getName()).append("\n");
@@ -148,38 +147,13 @@ public class OracleFunctionType extends SqlType implements BeanCreate<OracleFunc
 
 		if (func.hasBegin()) {
 			sb.append("BEGIN\n");
-			if (func.getDelcareList() != null) {
-				for (OracleParam op : func.getDelcareList()) {
+			if (func.getDeclareList() != null) {
+				for (OracleParam op : func.getDeclareList()) {
 					sb.append(op.toDeclareString()).append("\n");
 				}
 			}
 			if (func.hasEnd()) {
-				func.getSqlList().stream().forEach(sql -> {
-					if (sql.getStatement() instanceof SQLStatement) {
-						SQLStatement s = (SQLStatement) sql.getStatement();
-
-//						String out = SQLUtils.toSQLString(s, JdbcConstants.MYSQL);
-//						out = StringUtils.replaceAll(out, "\\n", "");
-						StringBuffer sqlOut = new StringBuffer();
-						s.accept(new O2MVisitor(sqlOut, false));
-						String out = SqlUtils.mergeAndTrim(StringUtils.replaceAll(sqlOut.toString(), "\\n", " "));
-						String lowerOut = out.toLowerCase();
-
-						//判断处理hierachical(start with...)
-
-						//去除from dual
-						int idx = lowerOut.indexOf("from dual");
-						if (idx >= 0) {
-							sqlOut = new StringBuffer(out);
-							sqlOut.delete(idx, idx+9);
-							out = sqlOut.toString();
-						}
-						out = StringUtils.replaceAll(out, ";", ";\n");
-						sb.append(out).append(";\n");
-					} else
-						sb.append(sql.getStatement());
-//					sql.accept();
-				});
+				func.getSqlList().stream().forEach(sql -> sql.append(sb, f));
 				sb.append("END$$\n");
 			} else {
 				int beginIdx = func.getContent().toUpperCase().indexOf("BEGIN");

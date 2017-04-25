@@ -1,7 +1,6 @@
 package SqlToMysql.bean;
 
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,70 +51,4 @@ public class SqlFile {
 		return contentList;
 	}
 
-	public List<SqlBlock> splitFileByComment() {
-		List<SqlBlock> blocks = Lists.newArrayList();
-
-		Integer start = null;
-		for (int i = 0; i < contentList.size(); i++) {
-			String str = contentList.get(i);
-			if (!str.startsWith("--")) continue;
-			if (StringUtils.isNotBlank(str.replaceAll("-", ""))) continue;
-			if (i > 0 && contentList.get(i - 1).startsWith("--")) continue;
-			if (start != null) {
-				blocks.add(new SqlBlock(this, start, i-1));
-			}
-			start = i;
-		}
-		if (start != null && start + 1 < contentList.size()) {
-			blocks.add(new SqlBlock(this, start, contentList.size()-1));
-		}
-		return blocks;
-	}
-
-	public List<SqlBlock> splitFileToBlock(String separator) {
-		List<SqlBlock> blocks = Lists.newArrayList();
-
-		boolean isComment = false;
-		SqlBlock block = null;
-		for (int i = 0; i < contentList.size(); i++) {
-			String str = contentList.get(i);
-			if (StringUtils.isBlank(str))
-				continue;
-			// 注释校验
-			String preStr = "";
-			while (str.indexOf("") >= 0 || isComment) {
-				if (!isComment) {
-					isComment = true;
-					if (!str.startsWith("")) {
-						preStr += str.substring(0, str.indexOf(""));
-					}
-				}
-				int commentEnd = str.indexOf("*/");
-				if (commentEnd >= 0) {
-					isComment = false;
-					str = str.substring(commentEnd + 2);
-				} else {
-					str = "";
-					break;
-				}
-				;
-			}
-			str = preStr + str;
-			if (str.indexOf("--") >= 0) {
-				str = str.substring(0, str.indexOf("--"));
-			}
-			if (isComment || StringUtils.isBlank(str))
-				continue;
-			if (block == null) {
-				block = new SqlBlock(i, this);
-			}
-			block.sql = StringUtils.isBlank(block.sql) ? str : block.sql + " " + str;
-			if (str.equals(separator)) {
-				block.setEnd(i);
-				blocks.add(block);
-				block = null;
-			}
-		}
-		return blocks;
-	}
 }

@@ -2,10 +2,16 @@ package SqlToMysql.util;
 
 import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.bean.SqlFile;
+import SqlToMysql.inter.TypeService;
+import SqlToMysql.statement.O2MVisitor;
+import SqlToMysql.statement.SqlStmt;
 import SqlToMysql.type.SqlType;
+import com.alibaba.druid.sql.ast.SQLStatement;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,11 +22,12 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class SqlUtils {
+	private static final Logger log = LogManager.getLogger();
 	/**
 	 * 去除评论
-	 *
 	 * @param sqlList
 	 * @return
 	 */
@@ -122,5 +129,66 @@ public class SqlUtils {
 		}
 		Files.write(path, list, StandardOpenOption.CREATE_NEW);
 	}
+	/**
+	 * 读取Bean中的Statement，判断组合并输出各statement类型的数量
+	 * @param list
+	 * @param f
+	 */
+	public static <T> void outputStatementSize(List<T> list, Function<T, List<SqlStmt>> f) {
+		Map<String, List<SqlStmt>> map = Maps.newHashMap();
+		list.stream().forEach(t -> {
+			List<SqlStmt> sqlList = f.apply(t);
+			if (sqlList == null) {
+				System.out.println("null:" + t);
+				return;
+			}
+			Map<String, List<SqlStmt>> m = MapListUtils.beanToMap(sqlList, sqlStmt -> {
+				if (sqlStmt == null || sqlStmt.getStatement() == null) return "null";
+				SqlStmt s = (SqlStmt) sqlStmt;
+				if (s.getStatement() instanceof SQLStatement) {
+					SQLStatement stmt = (SQLStatement) s.getStatement();
+					return stmt.getClass().getName();
+				} else if (s.getStatement() == null){
+					return "null";
+				} else if (s.getErrorMsg() != null) {
+					log.error("name:" + t + ",error:"+s.getErrorMsg());
+					return "error";
+				} else {
+					log.error("name:" + t + ",string:"+s.getStatement());
+					return "string";
+				}
+			});
+			MapListUtils.reduce(map, m);
+		});
+		System.out.println(MapListUtils.toSizeOutput(map));
+	}
 
+
+	/**
+	 * 将Bean转为Mysql
+	 *
+	 * @param writePath
+	 * @param list
+	 * @param typeService
+	 * @throws IOException
+	 */
+	public static <T> void listToMysql(String writePath, String name, List<T> list, TypeService typeService) throws IOException {
+		List<String> sqls = Lists.newArrayList();
+		System.out.println("------------------------------------------------------------------------------");
+		for (T t : list) {
+			try {
+				sqls.add(typeService.toMysqlSyntax(t));
+			} catch (Exception e) {
+				log.error(t, e);
+			}
+		}
+		System.out.println("------------------------------------------------------------------------------");
+		// 输出Visitor中的统计
+		O2MVisitor.counter.outputToConsole();
+		System.out.println(O2MVisitor.counter.size());
+		System.out.println(MapListUtils.toOutput(O2MVisitor.errorMsgs));
+
+		// 写出到文件
+		SqlUtils.writeFileStr(writePath, name, sqls);
+	}
 }

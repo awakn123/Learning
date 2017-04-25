@@ -2,19 +2,22 @@ package SqlToMysql.type.oracleSqlType;
 
 import SqlToMysql.bean.OracleProcedure;
 import SqlToMysql.bean.SqlBlock;
-import SqlToMysql.inter.BeanCreate;
+import SqlToMysql.inter.TypeService;
+import SqlToMysql.statement.SqlParserService;
 import SqlToMysql.type.SqlType;
 import SqlToMysql.util.SqlUtils;
+import com.alibaba.druid.sql.visitor.SQLASTVisitor;
 import com.google.common.collect.Maps;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class OracleProcedureType extends SqlType implements BeanCreate<OracleProcedure> {
+public class OracleProcedureType extends SqlType implements TypeService<OracleProcedure> {
 
 	private static volatile OracleProcedureType instance;
 	private static Pattern prefix = Pattern.compile("( *)(AS|IS)( +)(BEGIN( +))?", Pattern.CASE_INSENSITIVE);
@@ -59,7 +62,12 @@ public class OracleProcedureType extends SqlType implements BeanCreate<OraclePro
 	}
 
 	@Override
-	public OracleProcedure createBean(SqlBlock block) {
+	public OracleProcedure createBean(SqlBlock block, SqlParserService parser) {
+		return null;
+	}
+
+	@Override
+	public String toMysqlSyntax(OracleProcedure oracleProcedure, Function<Appendable, SQLASTVisitor> f) {
 		return null;
 	}
 

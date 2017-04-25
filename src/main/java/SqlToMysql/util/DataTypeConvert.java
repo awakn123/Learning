@@ -12,6 +12,7 @@ public class DataTypeConvert {
 		oracleToMysqlTypeMap.put("INTEGER", "INT");
 		oracleToMysqlTypeMap.put("INT", "INT");
 		oracleToMysqlTypeMap.put("VARCHAR2", "VARCHAR");
+		oracleToMysqlTypeMap.put("CHAR", "CHAR");
 		oracleToMysqlTypeMap.put("FLOAT", "DECIMAL");
 		oracleToMysqlTypeMap.put("PIPELINED", "PIPELINED");
 		oracleToMysqlTypeMap.put("AGGREGATE", "AGGREGATE");

@@ -49,7 +49,7 @@ public class MapListUtils {
 	 */
 	public static <K, V> String toSizeOutput(Map<K, List<V>> map) {
 		StringBuffer sb = new StringBuffer();
-		map.entrySet().stream().forEach(e -> sb.append("key:").append(e.getKey()).append(", size:").append("size:").append(e.getValue().size()).append("\n"));
+		map.entrySet().stream().forEach(e -> sb.append("key:").append(e.getKey()).append(", size:").append(e.getValue().size()).append("\n"));
 		return sb.toString();
 	}
 
