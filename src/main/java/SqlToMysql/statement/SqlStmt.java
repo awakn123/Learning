@@ -43,6 +43,7 @@ public class SqlStmt<T> {
 				out = sqlOut.toString();
 			}
 			out = StringUtils.replaceAll(out, ";", ";\n");
+			out = StringUtils.replaceAll(out, "\n ","\n");//去掉句首空格
 			sb.append(out).append(";\n");
 		} else
 			sb.append(statement);

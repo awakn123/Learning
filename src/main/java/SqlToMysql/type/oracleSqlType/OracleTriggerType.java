@@ -93,7 +93,9 @@ public class OracleTriggerType extends SqlType  implements TypeService<OracleTri
 		boolean hasBegin = Pattern.compile("^BEGIN", Pattern.CASE_INSENSITIVE).matcher(content).find();
 		boolean hasEnd = Pattern.compile("END( " + name + ")?( )?;( )?(/)?$", Pattern.CASE_INSENSITIVE).matcher(content).find();
 		if (hasBegin && hasEnd) {
-			int beginIdx = content.toUpperCase().indexOf("BEGIN");
+			int beginIdx = content.toUpperCase().indexOf("BEGIN ");
+			if (beginIdx == -1)
+				beginIdx = content.toUpperCase().indexOf("BEGIN\n");
 			int endIdx = content.toUpperCase().lastIndexOf("END");
 			content = content.substring(beginIdx + 5, endIdx);
 			List<SqlStmt> sqlList = parser.parse(content, name);

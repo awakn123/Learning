@@ -29,11 +29,13 @@ import com.alibaba.druid.sql.dialect.oracle.ast.stmt.OracleMultiInsertStatement.
 import com.alibaba.druid.sql.dialect.oracle.visitor.OracleOutputVisitor;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 // MySqlOutputVisitor
 // OracleOutputVisitor
@@ -44,6 +46,9 @@ public class O2MVisitor extends OracleOutputVisitor {
 	public static CounterMap<String> counter = new CounterMap<String>();
 	public static CounterMap<String> okCounter = new CounterMap<String>();
 	public static Map<String, List<String>> errorMsgs = Maps.newHashMap();
+	private static Set<String> sameFunctionNames = Sets.newHashSet("getpinyin", "lower", "concat", "fn_split", "table");
+	private static Set<String> procedureNames = Sets.newHashSet("sysmaintenancelog_proc");
+
 	public O2MVisitor(Appendable appender) {
 		super(appender, true);
 	}
@@ -102,7 +107,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 	}
 
 	public boolean visit(OracleDeleteStatement x) {
-		counter.putOrIncrement("visit.OracleDeleteStatement");
+		okCounter.putOrIncrement("visit.OracleDeleteStatement");
 		return super.visit(x);
 	}
 
@@ -296,7 +301,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 	}
 
 	public boolean visit(OracleUpdateStatement x) {
-		counter.putOrIncrement("visit.OracleUpdateStatement");
+		okCounter.putOrIncrement("visit.OracleUpdateStatement");
 		return super.visit(x);
 
 	}
@@ -527,7 +532,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 					exprs.get(0).output((StringBuffer)getAppender());
 				return false;
 			}
-			return false;
+			return super.visit(x);
 		} else if (x.getExpr() instanceof SQLBinaryOpExpr) {
 			SQLBinaryOpExpr expr = ((SQLBinaryOpExpr)x.getExpr());
 			if (SQLBinaryOperator.Assignment.equals(expr.getOperator())) {
@@ -549,8 +554,13 @@ public class O2MVisitor extends OracleOutputVisitor {
 
 	@Override
 	public boolean visit(OracleSysdateExpr x) {
-		counter.putOrIncrement("visit.OracleSysdateExpr");
-		return super.visit(x);
+		okCounter.putOrIncrement("visit.OracleSysdateExpr");
+		print("NOW()");
+		if (x.getOption() != null) {
+			print("@");
+			print(x.getOption());
+		}
+		return false;
 	}
 
 
@@ -661,7 +671,39 @@ public class O2MVisitor extends OracleOutputVisitor {
 	@Override
 	public boolean visit(OracleForStatement x) {
 		counter.putOrIncrement("visit.OracleForStatement");
-		return super.visit(x);
+		print("DECLARE ");
+		x.getIndex().accept(this);
+		print(" CURSOR FOR ");
+		x.getRange().accept(this);
+		print(";");
+		println();
+		println("DECLARE DONE TINYINT DEFAULT 0;");
+		println("DECLARE continue handler for sqlstate '02000' set DONE=1;");
+		print("FETCH ");
+		x.getIndex().accept(this);
+		println(" INTO ROW;");
+		println("WHILE DONE!=1 DO");
+		incrementIndent();
+		println();
+
+		for (int i = 0, size = x.getStatements().size(); i < size; ++i) {
+			SQLStatement item = x.getStatements().get(i);
+			item.setParent(x);
+			item.accept(this);
+			if (i != size - 1) {
+				println(";");
+			}
+		}
+
+		decrementIndent();
+		println(";");
+		print("FETCH ");
+		x.getIndex().accept(this);
+		println(" INTO ROW;");
+		println("END WHILE;");
+		print("CLOSE ");
+		x.getIndex().accept(this);
+		return false;
 	}
 
 	@Override
@@ -971,14 +1013,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 		} else if (lowerMethodName.equals("substr"))
 			return super.visit(x);
 		else if (lowerMethodName.equals("to_number")) {
-			x.setMethodName("cast");
-			boolean result = super.visit(x);
-			StringBuffer output = (StringBuffer)getAppender();
-			if (output.lastIndexOf(")") == output.length() - 1) {
-				output.insert(output.length() - 1, " as signed ");
-			} else
-				log.error("to_number no parameter");
-			return result;
+			return doCastFunction(x, "signed");
 		} else if (lowerMethodName.equals("length")) {
 			x.setMethodName("char_length");
 			return super.visit(x);
@@ -986,10 +1021,65 @@ public class O2MVisitor extends OracleOutputVisitor {
 			if (x.getAttributes().size() == 1) {
 				return super.visit(x);
 			}
+		} else if (lowerMethodName.equals("to_char")) {
+			if (x.getParameters().size() > 1) {
+				x.setMethodName("date_format");
+				return super.visit(x);
+			} else if (x.getParameters().size() == 1) {
+				return doCastFunction(x, "CHAR");
+			}
+		} else if (lowerMethodName.equals("nvl")) {
+			x.setMethodName("ifnull");
+			return super.visit(x);
+		} else if (sameFunctionNames.contains(lowerMethodName))
+			return super.visit(x);
+		else if (procedureNames.contains(lowerMethodName)) {
+			print("CALL ");
+			return super.visit(x);
+		} else if (lowerMethodName.equals("to_date")) {
+			x.setMethodName("STR_TO_DATE");
+			return super.visit(x);
 		}
 
 		okCounter.decrement("visit.SQLMethodInvokeExpr");
 		counter.putOrIncrement("visit.SQLMethodInvokeExpr");
 		return outContent(a->super.visit(a), x, "SQLMethodInvokeExpr");
+	}
+
+	private boolean doCastFunction(SQLMethodInvokeExpr x, String mark) {
+		x.setMethodName("cast");
+		boolean result = super.visit(x);
+		StringBuffer output = (StringBuffer)getAppender();
+		if (output.lastIndexOf(")") == output.length() - 1) {
+			output.insert(output.length() - 1, " as " + mark);
+		} else
+			log.error("cast no parameter");
+		return result;
+	}
+
+	public boolean visit(SQLVariantRefExpr x) {
+		List<Object> parameters = this.getParameters();
+		int index = x.getIndex();
+
+		if (parameters == null || parameters.isEmpty() || index >= parameters.size()) {
+			String lowerName = x.getName().toLowerCase();
+			if (lowerName.equals(":new"))
+				print("new");
+			else if (lowerName.equals(":old"))
+				print("old");
+			else if (lowerName.equals("sysdate"))
+				print("now()");
+			else if (lowerName.equals("yyyy-mm-dd"))
+				print("%Y-%m-%d");
+			else if (lowerName.equals("hh24-mi-ss"))
+				print("%H-%i-%S");
+			else
+				print(x.getName());
+			return false;
+		}
+
+		Object param = parameters.get(index);
+		printParameter(param);
+		return false;
 	}
 }

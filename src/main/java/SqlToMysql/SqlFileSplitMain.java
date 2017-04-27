@@ -3,7 +3,8 @@ package SqlToMysql;
 import SqlToMysql.bean.OracleTrigger;
 import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.bean.SqlFile;
-import SqlToMysql.split.NavicatSplit;
+import SqlToMysql.split.CreateSqlSplit;
+import SqlToMysql.split.SqlFileSplit;
 import SqlToMysql.type.oracleSqlType.OracleTriggerType;
 import SqlToMysql.util.SqlUtils;
 import com.google.common.collect.Lists;
@@ -19,14 +20,15 @@ import static SqlToMysql.util.MapListUtils.beanToMap;
 public class SqlFileSplitMain {
 
 	public static void main(String[] args) throws IOException {
-		String rootPath = "./src/test/sqlWork/e8_oracle/split/test/FunctionChange.sql";
-//		String writePath = "./src/test/sqlWork/e8_oracle/split/programDone";
+		String rootPath = "./src/test/sqlWork/e8_oracle/split/trigger/notAutoTrigger.sql";
+		String writePath = "./src/test/sqlWork/e8_oracle/split/test/trigger";
 		List<SqlFile> sqlFiles = readFile(rootPath);
+		SqlFileSplit splitService = new CreateSqlSplit();
+		splitService.splitFileByNum(sqlFiles,35, writePath,"trigger");
 
-		NavicatSplit splitService = new NavicatSplit();
-		splitService.splitNavicatExportFile(sqlFiles, "./src/test/resource/e8_oracle/split");
-		splitService.outputSqlFileComment(sqlFiles);
-//		OracleProcedureType.classifiedByContent(blocks);
+//		NavicatSplit splitService = new NavicatSplit();
+//		splitService.splitNavicatExportFile(sqlFiles, "./src/test/resource/e8_oracle/split");
+//		splitService.outputSqlFileComment(sqlFiles);
 	}
 
 

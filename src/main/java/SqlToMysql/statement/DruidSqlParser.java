@@ -48,7 +48,14 @@ public final class DruidSqlParser {
 				}
 			}
 		}
-		;
+		if (temp != null) {
+			try {
+				parseByDruid(temp);
+			} catch (Exception e) {
+				log.error("name:" + name + ", sql:" + temp, e);
+			}
+			stmts.add(new SqlStmt(temp));
+		}
 		return stmts;
 	}
 

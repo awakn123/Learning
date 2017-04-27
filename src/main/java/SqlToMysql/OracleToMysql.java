@@ -34,7 +34,7 @@ public class OracleToMysql {
 	 */
 	public static void main(String[] args) throws IOException {
 		// 1~22
-		String rootPath = "./src/test/sqlWork/e8_oracle/split/trigger/notAutoTrigger.sql";
+		String rootPath = "./src/test/sqlWork/e8_oracle/split/test/trigger/trigger1_change.sql";
 		String writePath = "./src/test/sqlWork/e8_oracle/split/programDone";
 		TypeService typeService = OracleTriggerType.getInstance();
 
@@ -52,7 +52,7 @@ public class OracleToMysql {
 		System.out.println(triggers.size());
 //		SqlUtils.outputStatementSize(triggers, t -> t.getSqlList());
 
-		SqlUtils.listToMysql(writePath, "trigger.sql", triggers, OracleTriggerType.getInstance());
+		SqlUtils.listToMysql(writePath, "trigger1.sql", triggers, OracleTriggerType.getInstance());
 	}
 
 }
