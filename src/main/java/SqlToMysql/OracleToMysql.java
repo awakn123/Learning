@@ -52,7 +52,7 @@ public class OracleToMysql {
 		System.out.println(triggers.size());
 //		SqlUtils.outputStatementSize(triggers, t -> t.getSqlList());
 
-		SqlUtils.listToMysql(writePath, "trigger1.sql", triggers, OracleTriggerType.getInstance());
+		SqlUtils.listToMysql(writePath, "trigger1_programDone.sql", triggers, OracleTriggerType.getInstance());
 	}
 
 }

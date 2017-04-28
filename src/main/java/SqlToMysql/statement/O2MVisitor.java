@@ -225,7 +225,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 				print("(select @id:=group_concat(");
 				SQLBinaryOpExpr connectBy = (SQLBinaryOpExpr)x.getHierachicalQueryClause().getConnectBy();
 				connectBy.getLeft().accept(this);
-				print(" separator ',') from ");
+				print(") from ");
 				from.getExpr().accept(this);
 				print(" where find_in_set(");
 				connectBy.getRight().accept(this);
@@ -1069,10 +1069,6 @@ public class O2MVisitor extends OracleOutputVisitor {
 				print("old");
 			else if (lowerName.equals("sysdate"))
 				print("now()");
-			else if (lowerName.equals("yyyy-mm-dd"))
-				print("%Y-%m-%d");
-			else if (lowerName.equals("hh24-mi-ss"))
-				print("%H-%i-%S");
 			else
 				print(x.getName());
 			return false;
@@ -1080,6 +1076,24 @@ public class O2MVisitor extends OracleOutputVisitor {
 
 		Object param = parameters.get(index);
 		printParameter(param);
+		return false;
+	}
+
+	public boolean visit(SQLCharExpr x) {
+		if ((x.getText() == null) || (x.getText().length() == 0)) {
+			print("NULL");
+		} else {
+			print("'");
+			String lowerValue = x.getText().toLowerCase();
+			if (lowerValue.equals("yyyy-mm-dd"))
+				print("%Y-%m-%d");
+			else if (lowerValue.equals("hh24:mi:ss"))
+				print("%H:%i:%S");
+			else
+				print(x.getText().replaceAll("'", "''"));
+			print("'");
+		}
+
 		return false;
 	}
 }

@@ -4,6 +4,8 @@ import SqlToMysql.util.DataTypeConvert;
 import SqlToMysql.util.ListUtils;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.regex.Pattern;
  * 存储过程、函数的传参
  */
 public class OracleParam {
+	private static final Logger log = LogManager.getLogger();
 	private String name;//参数名
 	private String type;//数据类型
 	private InOut inout;//传入传出
@@ -67,15 +70,17 @@ public class OracleParam {
 		} else return null;
 		String[] paramArr = paramStr.split(split);
 		List<OracleParam> params = Lists.newArrayList();
-		Pattern simplePattern = Pattern.compile("^\\w+ \\w+(\\(\\d+\\))?$", Pattern.CASE_INSENSITIVE);
-		Pattern setPattern = Pattern.compile("^\\w+ \\w+(\\(\\d+\\))?( )?:=( )?.+$", Pattern.CASE_INSENSITIVE);
-		Pattern defaultPattern = Pattern.compile("^\\w+ \\w+(\\(\\d+\\))? default .+$", Pattern.CASE_INSENSITIVE);
-		Pattern transPattern = Pattern.compile("^\\w+ (in out|in|out) \\w+$", Pattern.CASE_INSENSITIVE);
+		Pattern simplePattern = Pattern.compile("^(declare )?\\w+ \\w+(\\([\\d,]+\\))?$", Pattern.CASE_INSENSITIVE);
+		Pattern setPattern = Pattern.compile("^(declare )?\\w+ \\w+(\\([\\d,]+\\))?( )?:=( )?.+$", Pattern.CASE_INSENSITIVE);
+		Pattern defaultPattern = Pattern.compile("^(declare )?\\w+ \\w+(\\([\\d,]+\\))? default .+$", Pattern.CASE_INSENSITIVE);
+		Pattern transPattern = Pattern.compile("^(declare )?\\w+ (in out|in|out) \\w+$", Pattern.CASE_INSENSITIVE);
 		for (int i = 0; i < paramArr.length; i++) {
 			String str = paramArr[i].trim();
 			String[] arr = str.split(" ");
+			if (arr[0].equalsIgnoreCase("declare"))
+				arr = Arrays.copyOfRange(arr, 1,arr.length);
 			String paramName = arr[0];
-			String paramType = null;
+			String paramType;
 			InOut paramInOut = null;
 			String defaultValue = null;
 			if (simplePattern.matcher(str).find())
@@ -92,12 +97,13 @@ public class OracleParam {
 			} else {
 				str = ListUtils.toString(Arrays.asList(paramArr).subList(i, paramArr.length), split);
 				params.add(new OracleParam(str));
+				log.error("cannot parse param:" + str);
 //				throw new RuntimeException(str);
 				break;
 			}
 
 			String length = null;
-			if (paramType.matches("\\w+\\(\\d+\\)")){
+			if (paramType.matches("\\w+\\([\\d,]+\\)")){
 				int leftIdx = paramType.indexOf("(");
 				int rightIdx = paramType.indexOf(")");
 				length = paramType.substring(leftIdx + 1 ,rightIdx);
@@ -138,6 +144,9 @@ public class OracleParam {
 		}
 		StringBuffer psb = new StringBuffer("declare ");
 		String mysqlType = DataTypeConvert.oracleToMysql(this.getType());
+		if (length != null && length.contains(",") && "INT".equals(mysqlType)) {
+			mysqlType = "DECIMAL";
+		}
 		psb.append(this.getName()).append(" ").append(mysqlType != null ? mysqlType : this.getType());
 		if (StringUtils.isNotBlank(length)) {
 			psb.append("(").append(length).append(")");

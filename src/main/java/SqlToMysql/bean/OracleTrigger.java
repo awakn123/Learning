@@ -10,7 +10,7 @@ import java.util.List;
 public class OracleTrigger {
 
 	private String name;//触发器名称
-	private String event;//触发器事件，insert/update等
+	private List<String> event;//触发器事件，insert/update等
 	private String time;//触发器时间点，before/after等
 	private String table;//触发器表
 	private String sql;//完整sql语句
@@ -18,7 +18,7 @@ public class OracleTrigger {
 	private List<OracleParam> declares;
 	private List<SqlStmt> sqlList;//包括Statement与String
 
-	public OracleTrigger(SqlBlock block, String name, String event, String time, String table, String sql,List<OracleParam> declares, List<SqlStmt> sqlList) {
+	public OracleTrigger(SqlBlock block, String name, List<String> event, String time, String table, String sql,List<OracleParam> declares, List<SqlStmt> sqlList) {
 		this.block = block;
 		this.name = name;
 		this.event = event;
@@ -38,7 +38,7 @@ public class OracleTrigger {
 		return name;
 	}
 
-	public String getEvent() {
+	public List<String> getEvent() {
 		return event;
 	}
 

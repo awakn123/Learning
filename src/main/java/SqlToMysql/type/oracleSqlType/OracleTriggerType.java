@@ -8,6 +8,7 @@ import SqlToMysql.statement.SqlParserService;
 import SqlToMysql.statement.SqlStmt;
 import SqlToMysql.type.SqlType;
 import com.alibaba.druid.sql.visitor.SQLASTVisitor;
+import com.google.common.collect.Lists;
 
 import java.util.List;
 import java.util.function.Function;
@@ -55,11 +56,13 @@ public class OracleTriggerType extends SqlType  implements TypeService<OracleTri
 		sql = m.replaceAll("").trim();
 		Pattern p = Pattern.compile("^(BEFORE|AFTER) \\w+ ON \"\\w+\" REFERENCING OLD AS \"OLD\" NEW AS \"NEW\" FOR EACH ROW ENABLE", Pattern.CASE_INSENSITIVE);
 		m = p.matcher(sql);
-		String time, event, table;
+		String time, table;
+		List<String> events = Lists.newArrayList();
 		if (m.find()) {
 			String[] sqlSplits = m.group().split(" ");
 			time = sqlSplits.length > 0 ? sqlSplits[0] : null;
-			event = sqlSplits.length > 1 ? sqlSplits[1] : null;
+			String event = sqlSplits.length > 1 ? sqlSplits[1] : null;
+			events.add(event);
 			table = sqlSplits.length > 3 ? sqlSplits[3] : null;
 			table = table.replaceAll("\"", "");
 		} else {
@@ -73,7 +76,10 @@ public class OracleTriggerType extends SqlType  implements TypeService<OracleTri
 			time = sql.substring(0, firstSpaceIdx);
 			sql = sql.substring(firstSpaceIdx + 1);
 			int onIndex = sql.toUpperCase().indexOf("ON");
-			event = sql.substring(0, onIndex - 1);
+			String event = sql.substring(0, onIndex - 1);
+			String[] earr = event.split("OR");
+			for (String e : earr)
+				events.add(e.trim());
 			sql = sql.substring(onIndex + 3);
 			firstSpaceIdx = sql.indexOf(" ");
 			table = sql.substring(0, firstSpaceIdx);
@@ -99,9 +105,9 @@ public class OracleTriggerType extends SqlType  implements TypeService<OracleTri
 			int endIdx = content.toUpperCase().lastIndexOf("END");
 			content = content.substring(beginIdx + 5, endIdx);
 			List<SqlStmt> sqlList = parser.parse(content, name);
-			return new OracleTrigger(block, name, event, time, table, block.sql, declares, sqlList);
+			return new OracleTrigger(block, name, events, time, table, block.sql, declares, sqlList);
 		} else
-			return new OracleTrigger(block, name, event, time, table, block.sql, declares, null);
+			return new OracleTrigger(block, name, events, time, table, block.sql, declares, null);
 	}
 
 	@Override
@@ -110,20 +116,26 @@ public class OracleTriggerType extends SqlType  implements TypeService<OracleTri
 		sb.append("-- -------------------------------------------------------------------------------------------\n");
 		sb.append("-- ").append(tr.getName()).append("\n");
 		sb.append("-- -------------------------------------------------------------------------------------------\n");
-		//初始化
-		sb.append("DROP TRIGGER IF EXISTS ").append(tr.getName()).append(";\n");
-		sb.append("DELIMITER$$\n");
-		sb.append("CREATE TRIGGER ").append(tr.getName()).append(" ").append(tr.getTime()).append(" ")
-				.append(tr.getEvent()).append(" ON ").append(tr.getTable()).append("\n");
-		sb.append("BEGIN\n");
-		if (tr.getDeclares() != null) {
-			for (OracleParam op : tr.getDeclares()) {
-				sb.append(op.toDeclareString()).append("\n");
+		StringBuffer contentOut = new StringBuffer();
+		tr.getSqlList().stream().forEach(sql -> sql.append(contentOut, f));
+
+		for (String event : tr.getEvent()) {
+			String name = tr.getEvent().size() > 1 ? tr.getName() + "_" + event : tr.getName();
+			sb.append("DROP TRIGGER IF EXISTS ").append(name).append(";\n");
+			sb.append("DELIMITER$$\n");
+			sb.append("CREATE TRIGGER ").append(name).append(" ").append(tr.getTime()).append(" ")
+					.append(event).append(" ON ").append(tr.getTable()).append(" FOR EACH ROW\n");
+			sb.append("BEGIN\n");
+			if (tr.getDeclares() != null) {
+				for (OracleParam op : tr.getDeclares()) {
+					sb.append(op.toDeclareString()).append("\n");
+				}
 			}
+			sb.append(contentOut);
+			sb.append("END$$\n");
+			sb.append("DELIMITER;\n\n");
 		}
-		tr.getSqlList().stream().forEach(sql -> sql.append(sb, f));
-		sb.append("END$$\n");
-		sb.append("DELIMITER;\n");
+		sb.deleteCharAt(sb.length() - 1);
 		return sb.toString();
 	}
 
