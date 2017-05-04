@@ -1,5 +1,6 @@
-package SqlToMysql.inter;
+package SqlToMysql.type;
 
+import SqlToMysql.bean.OracleBean;
 import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.statement.DruidSqlParser;
 import SqlToMysql.statement.O2MVisitor;
@@ -10,7 +11,7 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.function.Function;
 
-public interface TypeService<T> {
+public interface TypeService<T extends OracleBean> {
 	default T createBean(SqlBlock block) {
 		return this.createBean(block, DruidSqlParser::parse);
 	};

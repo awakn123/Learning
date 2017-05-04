@@ -2,7 +2,7 @@ package SqlToMysql.type.oracleSqlType;
 
 import SqlToMysql.bean.OracleProcedure;
 import SqlToMysql.bean.SqlBlock;
-import SqlToMysql.inter.TypeService;
+import SqlToMysql.type.TypeService;
 import SqlToMysql.statement.SqlParserService;
 import SqlToMysql.type.SqlType;
 import SqlToMysql.util.SqlUtils;

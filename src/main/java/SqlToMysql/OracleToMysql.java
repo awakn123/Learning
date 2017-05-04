@@ -1,13 +1,10 @@
 package SqlToMysql;
 
-import SqlToMysql.bean.OracleTrigger;
+import SqlToMysql.bean.OracleBean;
 import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.bean.SqlFile;
-import SqlToMysql.inter.TypeService;
 import SqlToMysql.split.CreateSqlSplit;
 import SqlToMysql.split.SqlFileSplit;
-import SqlToMysql.type.SqlType;
-import SqlToMysql.type.oracleSqlType.OracleTriggerType;
 import SqlToMysql.util.SqlUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,9 +31,8 @@ public class OracleToMysql {
 	 */
 	public static void main(String[] args) throws IOException {
 		// 1~22
-		String rootPath = "./src/test/sqlWork/e8_oracle/split/test/trigger/trigger1_change.sql";
+		String rootPath = "./src/test/sqlWork/e8_oracle/split/trigger/notAutoTrigger.sql";
 		String writePath = "./src/test/sqlWork/e8_oracle/split/programDone";
-		TypeService typeService = OracleTriggerType.getInstance();
 
 		// 读取并分割为sql块
 		List<SqlFile> sqlFiles = readFile(rootPath);
@@ -45,14 +41,15 @@ public class OracleToMysql {
 		List<SqlBlock> blocks = sqlSplit.split(sqlFiles);
 		System.out.println(blocks.size());
 		// 转为OracleBlock
-		SqlType.assignOracleBlock(blocks);
 //		Map<SqlType, List<SqlBlock>> typeToBlockMap = SqlUtils.classfiedBySqlType(blocks);
 
-		List<OracleTrigger> triggers = typeService.createBeanBatch(blocks);
-		System.out.println(triggers.size());
-//		SqlUtils.outputStatementSize(triggers, t -> t.getSqlList());
+//		List<OracleTrigger> triggers = typeService.createBeanBatch(blocks);
+//		System.out.println(triggers.size());
+		List<OracleBean> beanList = SqlUtils.blockToBean(blocks);
+		System.out.println(beanList.size());
+		SqlUtils.outputStatementSize(beanList, t -> t.getSqlList());
 
-		SqlUtils.listToMysql(writePath, "trigger1_programDone.sql", triggers, OracleTriggerType.getInstance());
+		SqlUtils.listToMysql(writePath, "trigger_programDone.sql", beanList);
 	}
 
 }

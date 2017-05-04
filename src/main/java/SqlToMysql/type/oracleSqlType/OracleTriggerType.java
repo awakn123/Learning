@@ -3,10 +3,10 @@ package SqlToMysql.type.oracleSqlType;
 import SqlToMysql.bean.OracleParam;
 import SqlToMysql.bean.OracleTrigger;
 import SqlToMysql.bean.SqlBlock;
-import SqlToMysql.inter.TypeService;
 import SqlToMysql.statement.SqlParserService;
 import SqlToMysql.statement.SqlStmt;
 import SqlToMysql.type.SqlType;
+import SqlToMysql.type.TypeService;
 import com.alibaba.druid.sql.visitor.SQLASTVisitor;
 import com.google.common.collect.Lists;
 
@@ -70,14 +70,14 @@ public class OracleTriggerType extends SqlType  implements TypeService<OracleTri
 			m = p2.matcher(sql);
 			if (!m.find()) {
 				System.out.println("error:"+sql);
-				return new OracleTrigger(block, name, block.sql);
+				return new OracleTrigger(name, block.sql,block);
 			}
 			int firstSpaceIdx = sql.indexOf(" ");
 			time = sql.substring(0, firstSpaceIdx);
 			sql = sql.substring(firstSpaceIdx + 1);
 			int onIndex = sql.toUpperCase().indexOf("ON");
 			String event = sql.substring(0, onIndex - 1);
-			String[] earr = event.split("OR");
+			String[] earr = event.split(" OR ");
 			for (String e : earr)
 				events.add(e.trim());
 			sql = sql.substring(onIndex + 3);
@@ -120,16 +120,25 @@ public class OracleTriggerType extends SqlType  implements TypeService<OracleTri
 		tr.getSqlList().stream().forEach(sql -> sql.append(contentOut, f));
 
 		for (String event : tr.getEvent()) {
-			String name = tr.getEvent().size() > 1 ? tr.getName() + "_" + event : tr.getName();
+			String eventStr = event.contains(" ") ? event.split(" ")[0] : event;
+			int ofIndex = event.toLowerCase().indexOf(" of ");
+			String name = tr.getEvent().size() > 1 ? tr.getName() + "_" + eventStr : tr.getName();
 			sb.append("DROP TRIGGER IF EXISTS ").append(name).append(";\n");
 			sb.append("DELIMITER$$\n");
 			sb.append("CREATE TRIGGER ").append(name).append(" ").append(tr.getTime()).append(" ")
-					.append(event).append(" ON ").append(tr.getTable()).append(" FOR EACH ROW\n");
+					.append(eventStr).append(" ON ").append(tr.getTable()).append(" FOR EACH ROW\n");
+			if (ofIndex > 0)
+				sb.append("LABELTRI: ");
 			sb.append("BEGIN\n");
 			if (tr.getDeclares() != null) {
 				for (OracleParam op : tr.getDeclares()) {
 					sb.append(op.toDeclareString()).append("\n");
 				}
+			}
+			if (ofIndex > 0) {
+				String eventCol = event.substring(ofIndex + 4);
+				eventCol = eventCol.replaceAll("\"", "");
+				sb.append("IF new.").append(eventCol).append(" = old.").append(eventCol).append(" THEN LEAVE LABELTRI; END IF;\n");
 			}
 			sb.append(contentOut);
 			sb.append("END$$\n");

@@ -1,6 +1,7 @@
 package SqlToMysql.statement;
 
 import SqlToMysql.util.CounterMap;
+import SqlToMysql.util.DataTypeConvert;
 import com.alibaba.druid.sql.ast.*;
 import com.alibaba.druid.sql.ast.expr.*;
 import com.alibaba.druid.sql.ast.statement.*;
@@ -158,7 +159,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 
 	public boolean visit(OracleSelectJoin x) {
 		counter.putOrIncrement("visit.OracleSelectJoin");
-		return super.visit(x);
+		return outContent(a->super.visit(a), x, "OracleSelectJoin");
 	}
 
 	public boolean visit(OracleOrderByItem x) {
@@ -671,14 +672,17 @@ public class O2MVisitor extends OracleOutputVisitor {
 	@Override
 	public boolean visit(OracleForStatement x) {
 		counter.putOrIncrement("visit.OracleForStatement");
+		println("DECLARE DONE TINYINT DEFAULT 0;");
 		print("DECLARE ");
 		x.getIndex().accept(this);
 		print(" CURSOR FOR ");
 		x.getRange().accept(this);
 		print(";");
 		println();
-		println("DECLARE DONE TINYINT DEFAULT 0;");
 		println("DECLARE continue handler for sqlstate '02000' set DONE=1;");
+		print("OPEN ");
+		x.getIndex().accept(this);
+		println(";");
 		print("FETCH ");
 		x.getIndex().accept(this);
 		println(" INTO ROW;");
@@ -703,6 +707,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 		println("END WHILE;");
 		print("CLOSE ");
 		x.getIndex().accept(this);
+		println(";");
 		return false;
 	}
 
@@ -737,7 +742,9 @@ public class O2MVisitor extends OracleOutputVisitor {
 	@Override
 	public boolean visit(OracleIfStatement x) {
 		okCounter.putOrIncrement("visit.OracleIfStatement");
-		return super.visit(x);
+		super.visit(x);
+		print(";");
+		return false;
 	}
 
 	@Override
@@ -936,7 +943,8 @@ public class O2MVisitor extends OracleOutputVisitor {
 	}
 
 	public boolean visit(SQLCharacterDataType x) {
-		counter.putOrIncrement("visit.SQLCharacterDataType");
+		x.setName(DataTypeConvert.oracleToMysql(x.getName()));
+		okCounter.putOrIncrement("visit.SQLCharacterDataType");
 		return super.visit(x);
 	}
 

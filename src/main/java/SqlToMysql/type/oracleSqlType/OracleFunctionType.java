@@ -4,7 +4,7 @@ import SqlToMysql.bean.OracleFunction;
 import SqlToMysql.bean.OracleParam;
 import SqlToMysql.bean.OracleReturn;
 import SqlToMysql.bean.SqlBlock;
-import SqlToMysql.inter.TypeService;
+import SqlToMysql.type.TypeService;
 import SqlToMysql.statement.SqlParserService;
 import SqlToMysql.statement.SqlStmt;
 import SqlToMysql.type.SqlType;
@@ -101,6 +101,7 @@ public class OracleFunctionType extends SqlType implements TypeService<OracleFun
 				content = content.substring(beginIdx + 5, endIdx);
 //				List<SQLStatement> list = SQLUtils.parseStatements(content, JdbcConstants.ORACLE);
 //				List<SqlStmt> list = DruidSqlParser.parse(content, name);
+				System.out.println(content);
 				List<SqlStmt> list = parserService.parse(content, name);
 				return new OracleFunction(name, params, returnType, declares, list, block, hasBegin, hasEnd);
 			} else
@@ -147,8 +148,8 @@ public class OracleFunctionType extends SqlType implements TypeService<OracleFun
 
 		if (func.hasBegin()) {
 			sb.append("BEGIN\n");
-			if (func.getDeclareList() != null) {
-				for (OracleParam op : func.getDeclareList()) {
+			if (func.getDeclares() != null) {
+				for (OracleParam op : func.getDeclares()) {
 					sb.append(op.toDeclareString()).append("\n");
 				}
 			}

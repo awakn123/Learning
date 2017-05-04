@@ -1,4 +1,4 @@
 package SqlToMysql.bean;
 
-public class OracleProcedure {
+public class OracleProcedure extends OracleBean{
 }

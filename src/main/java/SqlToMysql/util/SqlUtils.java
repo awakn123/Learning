@@ -1,11 +1,12 @@
 package SqlToMysql.util;
 
+import SqlToMysql.bean.OracleBean;
 import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.bean.SqlFile;
-import SqlToMysql.inter.TypeService;
 import SqlToMysql.statement.O2MVisitor;
 import SqlToMysql.statement.SqlStmt;
 import SqlToMysql.type.SqlType;
+import SqlToMysql.type.TypeService;
 import com.alibaba.druid.sql.ast.SQLStatement;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -169,14 +170,16 @@ public class SqlUtils {
 	 *
 	 * @param writePath
 	 * @param list
-	 * @param typeService
 	 * @throws IOException
 	 */
-	public static <T> void listToMysql(String writePath, String name, List<T> list, TypeService typeService) throws IOException {
+	public static <T extends OracleBean> void listToMysql(String writePath, String name, List<T> list) throws IOException {
 		List<String> sqls = Lists.newArrayList();
 		System.out.println("------------------------------------------------------------------------------");
 		for (T t : list) {
 			try {
+				if (t.getBlock() == null || t.getBlock().getSqlType() == null || !(t.getBlock().getSqlType() instanceof TypeService))
+					continue;
+				TypeService typeService = (TypeService) t.getBlock().getSqlType();
 				sqls.add(typeService.toMysqlSyntax(t));
 			} catch (Exception e) {
 				log.error(t, e);
@@ -191,4 +194,24 @@ public class SqlUtils {
 		// 写出到文件
 		SqlUtils.writeFileStr(writePath, name, sqls);
 	}
+
+	public static List<OracleBean> blockToBean(List<SqlBlock> blocks) {
+		if (blocks == null || blocks.isEmpty()) return null;
+		List<OracleBean> beanList = Lists.newArrayList();
+		for (SqlBlock block: blocks) {
+			if (block.getSqlType() == null) {
+				SqlType.getOracleType().stream().filter(sqlType -> sqlType.check(block)).forEach(sqlType -> {
+					block.setSqlType(sqlType);
+					block.splitToObject();
+				});
+			}
+			if (block.getSqlType() instanceof TypeService) {
+				TypeService typeService = (TypeService) block.getSqlType();
+				beanList.add(typeService.createBean(block));
+			} else
+				beanList.add(new OracleBean(block));
+		}
+		return beanList;
+	}
+
 }

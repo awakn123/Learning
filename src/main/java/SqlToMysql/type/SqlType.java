@@ -145,7 +145,7 @@ public class SqlType {
 		}));
 	}
 
-	private boolean check(SqlBlock block) {
+	public boolean check(SqlBlock block) {
 		Matcher m = this.headPattern.matcher(block.sql);
 		return m.find();
 	}
