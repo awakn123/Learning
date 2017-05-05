@@ -1097,6 +1097,8 @@ public class O2MVisitor extends OracleOutputVisitor {
 				print("%Y-%m-%d");
 			else if (lowerValue.equals("hh24:mi:ss"))
 				print("%H:%i:%S");
+			else if (lowerValue.equalsIgnoreCase("yyyy-mm-dd hh24:mi:ss"))
+				print("%Y-%m-%d %H:%i:%S");
 			else
 				print(x.getText().replaceAll("'", "''"));
 			print("'");

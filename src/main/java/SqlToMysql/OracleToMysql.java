@@ -31,7 +31,7 @@ public class OracleToMysql {
 	 */
 	public static void main(String[] args) throws IOException {
 		// 1~22
-		String rootPath = "./src/test/sqlWork/e8_oracle/split/trigger/notAutoTrigger.sql";
+		String rootPath = "./src/test/sqlWork/e8_oracle/split/test/view.sql";
 		String writePath = "./src/test/sqlWork/e8_oracle/split/programDone";
 
 		// 读取并分割为sql块
@@ -49,7 +49,7 @@ public class OracleToMysql {
 		System.out.println(beanList.size());
 		SqlUtils.outputStatementSize(beanList, t -> t.getSqlList());
 
-		SqlUtils.listToMysql(writePath, "trigger_programDone.sql", beanList);
+		SqlUtils.listToMysql(writePath, "view_programDone.sql", beanList);
 	}
 
 }

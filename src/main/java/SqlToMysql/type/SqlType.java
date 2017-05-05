@@ -4,6 +4,7 @@ import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.type.oracleSqlType.OracleFunctionType;
 import SqlToMysql.type.oracleSqlType.OracleProcedureType;
 import SqlToMysql.type.oracleSqlType.OracleTriggerType;
+import SqlToMysql.type.oracleSqlType.OracleViewType;
 import com.google.common.collect.Lists;
 
 import java.util.List;
@@ -110,7 +111,8 @@ public class SqlType {
 		List<SqlType> types = Lists.newArrayList(
 				OracleProcedureType.getInstance(),
 				OracleFunctionType.getInstance(),
-				OracleTriggerType.getInstance()
+				OracleTriggerType.getInstance(),
+				OracleViewType.getInstance()
 		);
 		return types;
 	}
