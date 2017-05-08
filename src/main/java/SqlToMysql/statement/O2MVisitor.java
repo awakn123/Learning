@@ -282,7 +282,35 @@ public class O2MVisitor extends OracleOutputVisitor {
 
 	public boolean visit(OracleSelectSubqueryTableSource x) {
 		okCounter.putOrIncrement("visit.OracleSelectSubqueryTableSource");
-		return super.visit(x);
+
+		print("(");
+		incrementIndent();
+		println();
+		x.getSelect().accept(this);
+		decrementIndent();
+		println();
+		print(")");
+
+		if (x.getPivot() != null) {
+			println();
+			x.getPivot().accept(this);
+		}
+
+		if (x.getFlashback() != null) {
+			println();
+			x.getFlashback().accept(this);
+		}
+
+		if ((x.getAlias() != null) && (x.getAlias().length() != 0)) {
+			print(" ");
+			print(x.getAlias());
+		} else {
+			print(" alias");
+			okCounter.decrement("visit.OracleSelectSubqueryTableSource");
+			counter.increment("visit.OracleSelectSubqueryTableSource");
+		}
+
+		return false;
 	}
 
 	public boolean visit(OracleSelectTableReference x) {

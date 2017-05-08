@@ -38,7 +38,7 @@ public class OracleToMysql {
 		SqlConfig.ShowTypeError = true;
 		SqlConfig.showParseError = true;
 		// 1~22
-		String rootPath = "./src/test/sqlWork/e8_oracle/split/programDone/procedure/one/procedure_OracleExprStatement(689).sql";
+		String rootPath = "./src/test/sqlWork/e8_oracle/split/programDone/procedure/one/procedure_OracleExprStatement(689)_change.sql";
 		String writePath = "./src/test/sqlWork/e8_oracle/split/programDone/procedure/mysql/one";
 
 		// 读取并分割为sql块
@@ -49,6 +49,7 @@ public class OracleToMysql {
 		System.out.println(blocks.size());
 		List<OracleBean> beanList = SqlUtils.blockToBean(blocks);
 		System.out.println(beanList.size());
+
 //		beanList.stream().filter(t->t.getParams().stream().filter(op -> DataTypeConvert.ORACLE_TRANSFER_CURSOR.equals(op.getType())).count() == 0).forEach(t-> System.out.println(t));
 //		SqlUtils.splitByFirstSqlType(writePath, "procedure_%s.sql", beanList);
 

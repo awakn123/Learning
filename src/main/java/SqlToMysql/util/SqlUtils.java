@@ -235,6 +235,8 @@ public class SqlUtils {
 	 * @param <T>
 	 */
 	public static <T extends OracleBean> void splitByStmtNum(String writePath, String nameFormat, int maxNum ,List<T> list) {
+//		Map<Object, List<T>> beanMap = MapListUtils.beanToMap(list, t-> maxNum < 0 || maxNum >= t.getSqlList().size() ? t.getSqlList().size() : "more");
+//		System.out.println(MapListUtils.toSizeOutput(beanMap));
 		Map<Object, List<String>> sqlMap = Maps.newHashMap();
 		list.stream().forEach(t -> {
 			Object key;
