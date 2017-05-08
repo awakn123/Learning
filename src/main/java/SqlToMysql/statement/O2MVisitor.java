@@ -48,7 +48,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 	public static CounterMap<String> okCounter = new CounterMap<String>();
 	public static Map<String, List<String>> errorMsgs = Maps.newHashMap();
 	private static Set<String> sameFunctionNames = Sets.newHashSet("getpinyin", "lower", "concat", "fn_split", "table");
-	private static Set<String> procedureNames = Sets.newHashSet("sysmaintenancelog_proc");
+	private static Set<String> procedureNames = Sets.newHashSet("sysmaintenancelog_proc", "workflow_requestbase_insertnew", "workflow_requestlog_insert_new", "workflow_requestlog_op", "workflow_requestlogcurdate_new");
 
 	public O2MVisitor(Appendable appender) {
 		super(appender, true);
@@ -145,6 +145,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 	public boolean visit(OracleSelect x) {
 		okCounter.putOrIncrement("visit.OracleSelect");
 		return super.visit(x);
+//		return outContent(a->super.visit(a), x,"visit.OracleSelect");
 	}
 
 	public boolean visit(OracleSelectForUpdate x) {
@@ -287,6 +288,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 	public boolean visit(OracleSelectTableReference x) {
 		okCounter.putOrIncrement("visit.OracleSelectTableReference");
 		return super.visit(x);
+//		return outContent(a -> super.visit(a), x, "visit.OracleSelectTableReference");
 	}
 
 	public boolean visit(OracleSelectUnPivot x) {

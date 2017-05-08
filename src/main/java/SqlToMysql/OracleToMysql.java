@@ -30,9 +30,16 @@ public class OracleToMysql {
 	 * @param args
 	 */
 	public static void main(String[] args) throws IOException {
+		SqlConfig.KeepTransferCursor = false;
+		SqlConfig.KeepType = true;
+		SqlConfig.KeepRowtype = true;
+		SqlConfig.ShowTransferCursorError = false;
+		SqlConfig.ShowRowtypeError = true;
+		SqlConfig.ShowTypeError = true;
+		SqlConfig.showParseError = true;
 		// 1~22
-		String rootPath = "./src/test/sqlWork/e8_oracle/split/test/view.sql";
-		String writePath = "./src/test/sqlWork/e8_oracle/split/programDone";
+		String rootPath = "./src/test/sqlWork/e8_oracle/split/programDone/procedure/one/procedure_OracleExprStatement(689).sql";
+		String writePath = "./src/test/sqlWork/e8_oracle/split/programDone/procedure/mysql/one";
 
 		// 读取并分割为sql块
 		List<SqlFile> sqlFiles = readFile(rootPath);
@@ -40,16 +47,12 @@ public class OracleToMysql {
 		SqlFileSplit sqlSplit = new CreateSqlSplit();
 		List<SqlBlock> blocks = sqlSplit.split(sqlFiles);
 		System.out.println(blocks.size());
-		// 转为OracleBlock
-//		Map<SqlType, List<SqlBlock>> typeToBlockMap = SqlUtils.classfiedBySqlType(blocks);
-
-//		List<OracleTrigger> triggers = typeService.createBeanBatch(blocks);
-//		System.out.println(triggers.size());
 		List<OracleBean> beanList = SqlUtils.blockToBean(blocks);
 		System.out.println(beanList.size());
-		SqlUtils.outputStatementSize(beanList, t -> t.getSqlList());
+//		beanList.stream().filter(t->t.getParams().stream().filter(op -> DataTypeConvert.ORACLE_TRANSFER_CURSOR.equals(op.getType())).count() == 0).forEach(t-> System.out.println(t));
+//		SqlUtils.splitByFirstSqlType(writePath, "procedure_%s.sql", beanList);
 
-		SqlUtils.listToMysql(writePath, "view_programDone.sql", beanList);
+		SqlUtils.listToMysql(writePath, "procedure_OracleExprStatement(689).sql", beanList);
 	}
 
 }

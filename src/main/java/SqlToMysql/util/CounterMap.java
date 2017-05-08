@@ -39,8 +39,10 @@ public class CounterMap<K> extends HashMap<K, AtomicInteger> {
 		return i.incrementAndGet();
 	}
 
-	public void outputToConsole() {
-		this.entrySet().stream().forEach(e -> System.out.printf("%s:%s\n", e.getKey(), e.getValue().get()));
+	public String output() {
+		StringBuilder sb = new StringBuilder();
+		this.entrySet().stream().forEach(e -> sb.append(e.getKey()).append(":").append(e.getValue().get()).append("\n"));
+		return sb.toString();
 	}
 
 	public void decrement(K key) {

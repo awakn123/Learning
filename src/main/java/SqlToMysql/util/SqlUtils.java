@@ -10,6 +10,7 @@ import SqlToMysql.type.TypeService;
 import com.alibaba.druid.sql.ast.SQLStatement;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.sun.javafx.binding.StringFormatter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,7 +24,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 public class SqlUtils {
 	private static final Logger log = LogManager.getLogger();
@@ -133,12 +133,11 @@ public class SqlUtils {
 	/**
 	 * 读取Bean中的Statement，判断组合并输出各statement类型的数量
 	 * @param list
-	 * @param f
 	 */
-	public static <T> void outputStatementSize(List<T> list, Function<T, List<SqlStmt>> f) {
+	public static <T extends OracleBean> void outputStatementSize(List<T> list) {
 		Map<String, List<SqlStmt>> map = Maps.newHashMap();
 		list.stream().forEach(t -> {
-			List<SqlStmt> sqlList = f.apply(t);
+			List<SqlStmt> sqlList = t.getSqlList();
 			if (sqlList == null) {
 				System.out.println("null:" + t);
 				return;
@@ -174,7 +173,6 @@ public class SqlUtils {
 	 */
 	public static <T extends OracleBean> void listToMysql(String writePath, String name, List<T> list) throws IOException {
 		List<String> sqls = Lists.newArrayList();
-		System.out.println("------------------------------------------------------------------------------");
 		for (T t : list) {
 			try {
 				if (t.getBlock() == null || t.getBlock().getSqlType() == null || !(t.getBlock().getSqlType() instanceof TypeService))
@@ -185,14 +183,101 @@ public class SqlUtils {
 				log.error(t, e);
 			}
 		}
-		System.out.println("------------------------------------------------------------------------------");
 		// 输出Visitor中的统计
-		O2MVisitor.counter.outputToConsole();
+		O2MVisitor.counter.output();
 		System.out.println(O2MVisitor.counter.size());
+		System.out.println("------------------------------------------------------------------------------");
+		System.out.println(O2MVisitor.okCounter.output());
 		System.out.println(MapListUtils.toOutput(O2MVisitor.errorMsgs));
 
 		// 写出到文件
 		SqlUtils.writeFileStr(writePath, name, sqls);
+	}
+
+	/**
+	 * 将OracleBean中statement中有错的或为string的读出来，输出到errorFile中，将剩下的输出到rightFile中
+	 * @param writePath
+	 * @param errorFileName
+	 * @param rightFileName
+	 * @param list
+	 * @param <T>
+	 * @throws IOException
+	 */
+	public static <T extends OracleBean> void splitByError(String writePath, String errorFileName, String rightFileName, List<T> list) throws IOException {
+		List<String> errorSqls = Lists.newArrayList();
+		List<String> rightSqls = Lists.newArrayList();
+		for (T t : list) {
+			try {
+				if (t.getBlock() == null)
+					continue;
+				long errorNum = t.getSqlList().stream().filter(sqlStmt -> sqlStmt.getErrorMsg() != null || !(sqlStmt.getStatement() instanceof  SQLStatement)).count();
+				if (errorNum > 0)
+					errorSqls.addAll(t.getBlock().getSqlList());
+				else
+					rightSqls.addAll(t.getBlock().getSqlList());
+			} catch (Exception e) {
+				log.error(t, e);
+			}
+		}
+
+		if (!errorSqls.isEmpty())
+			SqlUtils.writeFileStr(writePath, errorFileName, errorSqls);
+		if (!rightSqls.isEmpty())
+			SqlUtils.writeFileStr(writePath, rightFileName, rightSqls);
+	}
+
+	/**
+	 * 按OracleBean中Oracle语句的数目进行划分
+	 * @param writePath
+	 * @param nameFormat
+	 * @param maxNum 语句数目超过此数（大于）的Bean会合并输出到more文件中,传入小于0的数目则不会合并。
+	 * @param list
+	 * @param <T>
+	 */
+	public static <T extends OracleBean> void splitByStmtNum(String writePath, String nameFormat, int maxNum ,List<T> list) {
+		Map<Object, List<String>> sqlMap = Maps.newHashMap();
+		list.stream().forEach(t -> {
+			Object key;
+			int size = t.getSqlList().size();
+			if (maxNum < 0 || maxNum >= size)
+				key = size;
+			else
+				key = "more";
+			sqlMap.putIfAbsent(key, new ArrayList<>());
+			sqlMap.get(key).addAll(t.getBlock().getSqlList());
+		});
+		sqlMap.entrySet().stream().forEach(entry -> {
+			try {
+				SqlUtils.writeFileStr(writePath, StringFormatter.format(nameFormat, entry.getKey()).getValue(), entry.getValue());
+			} catch (IOException e) {
+				log.error(entry.getKey(), e);
+			}
+		});
+	}
+
+	/**
+	 * 按第一条sql的类型进行分割。
+	 * 针对大量只有一条逻辑的存储过程而写
+	 * @param writePath
+	 * @param nameFormat
+	 * @param list
+	 * @param <T>
+	 */
+	public static <T extends OracleBean> void splitByFirstSqlType(String writePath, String nameFormat, List<T> list) {
+		Map<Object, List<String>> sqlMap = Maps.newHashMap();
+		Map<Object, List<T>> beanMap  =MapListUtils.beanToMap(list, t->t.getSqlList().get(0).getStatement().getClass().getSimpleName());
+		list.stream().forEach(t -> {
+			Object key = t.getSqlList().get(0).getStatement().getClass().getSimpleName();
+			sqlMap.putIfAbsent(key, new ArrayList<>());
+			sqlMap.get(key).addAll(t.getBlock().getSqlList());
+		});
+		sqlMap.entrySet().stream().forEach(entry -> {
+			try {
+				SqlUtils.writeFileStr(writePath, StringFormatter.format(nameFormat, entry.getKey() + "(" + beanMap.get(entry.getKey()).size() + ")").getValue(), entry.getValue());
+			} catch (IOException e) {
+				log.error(entry.getKey(), e);
+			}
+		});
 	}
 
 	public static List<OracleBean> blockToBean(List<SqlBlock> blocks) {

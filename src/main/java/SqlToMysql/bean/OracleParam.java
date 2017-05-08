@@ -1,5 +1,6 @@
 package SqlToMysql.bean;
 
+import SqlToMysql.SqlConfig;
 import SqlToMysql.util.DataTypeConvert;
 import SqlToMysql.util.ListUtils;
 import com.google.common.collect.Lists;
@@ -70,10 +71,15 @@ public class OracleParam {
 		} else return null;
 		String[] paramArr = paramStr.split(split);
 		List<OracleParam> params = Lists.newArrayList();
-		Pattern simplePattern = Pattern.compile("^(declare )?\\w+ \\w+(\\([\\d,]+\\))?$", Pattern.CASE_INSENSITIVE);
+		Pattern simplePattern = Pattern.compile("^(declare )?\\w+ \\w+( )?(\\([\\d, ]+\\))?$", Pattern.CASE_INSENSITIVE);
 		Pattern setPattern = Pattern.compile("^(declare )?\\w+ \\w+(\\([\\d,]+\\))?( )?:=( )?.+$", Pattern.CASE_INSENSITIVE);
 		Pattern defaultPattern = Pattern.compile("^(declare )?\\w+ \\w+(\\([\\d,]+\\))? default .+$", Pattern.CASE_INSENSITIVE);
 		Pattern transPattern = Pattern.compile("^(declare )?\\w+ (in out|in|out) \\w+$", Pattern.CASE_INSENSITIVE);
+		Pattern cursorTransferPattern = Pattern.compile("^(declare )?\\w+ (in out|in|out) (\\w|.)+$", Pattern.CASE_INSENSITIVE);
+		Pattern rowTypePattern = Pattern.compile("^(declare )?\\w+ \\w+%rowType$", Pattern.CASE_INSENSITIVE);
+		Pattern typePattern = Pattern.compile("^(declare )?\\w+ [\\w\\.]+%type(( )?:=( )?.+)?$", Pattern.CASE_INSENSITIVE);
+		Pattern cursorDeclarePattern = Pattern.compile("^cursor \\w+(\\(.+\\))? is", Pattern.CASE_INSENSITIVE);
+		Pattern cursorDeclarePattern2 = Pattern.compile("^type \\w+ is ref cursor", Pattern.CASE_INSENSITIVE);
 		for (int i = 0; i < paramArr.length; i++) {
 			String str = paramArr[i].trim();
 			String[] arr = str.split(" ");
@@ -94,12 +100,36 @@ public class OracleParam {
 			} else if (transPattern.matcher(str).find()) {
 				paramType = arr[arr.length - 1];
 				paramInOut = arr.length == 4 ? InOut.INOUT : InOut.getByStr(arr[1]);
-			} else {
-				str = ListUtils.toString(Arrays.asList(paramArr).subList(i, paramArr.length), split);
+			} else if (cursorTransferPattern.matcher(str).find() && TRANSFER_PARAM.equals(type)) {
+				if (SqlConfig.ShowTransferCursorError)
+					log.error("Mysql don't support transfer cursorParam.paramName:" + str);
+				OracleParam op = new OracleParam(str);
+				op.type = DataTypeConvert.ORACLE_TRANSFER_CURSOR;
+				params.add(op);
+				continue;
+			} else if (cursorDeclarePattern.matcher(str).find() || cursorDeclarePattern2.matcher(str).find()) {
+				OracleParam op = new OracleParam(str);
+				op.type = DataTypeConvert.ORACLE_CURSOR;
+				params.add(op);
+				continue;
+			} else if (rowTypePattern.matcher(str).find()) {
+				OracleParam op = new OracleParam(str);
+				op.type = DataTypeConvert.ORACLE_ROWTYPE;
+				params.add(op);
+				continue;
+			} else if (typePattern.matcher(str).find()) {
+				OracleParam op = new OracleParam(str);
+				op.type = DataTypeConvert.ORACLE_TYPE;
+				params.add(op);
+				continue;
+			}
+
+			else {
+				str = ListUtils.toString(Arrays.asList(paramArr).subList(i, i+1), split);
 				params.add(new OracleParam(str));
 				log.error("cannot parse param:" + str);
 //				throw new RuntimeException(str);
-				break;
+				continue;
 			}
 
 			String length = null;
@@ -126,21 +156,37 @@ public class OracleParam {
 	}
 
 	public String toString() {
-		StringBuffer psb = new StringBuffer();
+		if (!DataTypeConvert.checkType(this.type)) {
+			return specialToString();
+		}
+		StringBuilder psb = new StringBuilder();
+		if (inout != InOut.IN && inout != null)
+			psb.append(inout).append(" ");
 		String mysqlType = DataTypeConvert.oracleToMysql(this.getType());
 		psb.append(this.getName()).append(" ");
 		psb.append(mysqlType);
-		if (inout != InOut.IN && inout != null)
-			psb.append(inout);
 		if (StringUtils.isNotBlank(length)) {
 			psb.append("(").append(length).append(")");
 		} else if ("VARCHAR".equals(mysqlType))
 			psb.append("(255)");
 		return psb.toString();
 	}
-	public String toDeclareString() {
-		if (this.sql != null) {
+
+	private String specialToString() {
+		if (DataTypeConvert.ORACLE_CURSOR.equals(this.type))
 			return this.sql;
+		else if (DataTypeConvert.ORACLE_TRANSFER_CURSOR.equals(this.type) && SqlConfig.KeepTransferCursor)
+			return this.sql;
+		else if (DataTypeConvert.ORACLE_ROWTYPE.equals(this.type) && SqlConfig.KeepRowtype)
+			return this.sql;
+		else if (DataTypeConvert.ORACLE_TYPE.equals(this.type) && SqlConfig.KeepType)
+			return this.sql;
+		return "";
+	}
+
+	public String toDeclareString() {
+		if (!DataTypeConvert.checkType(this.type)) {
+			return specialToString();
 		}
 		StringBuffer psb = new StringBuffer("declare ");
 		String mysqlType = DataTypeConvert.oracleToMysql(this.getType());
@@ -156,5 +202,21 @@ public class OracleParam {
 			psb.append(" default ").append(this.defaultValue);
 		psb.append(";");
 		return psb.toString();
+	}
+
+	public static String listToString(List<OracleParam> params) {
+		if (params == null || params.isEmpty()) {
+			return("()");
+		} else {
+			StringBuilder sb = new StringBuilder();
+			List<String> paramStrs = Lists.newArrayList();
+			params.stream().forEach((param) -> {
+				String paramStr = param.toString();
+				if (StringUtils.isNotBlank(paramStr))
+					paramStrs.add(paramStr);
+			});
+			sb.append("(").append(ListUtils.toString(paramStrs)).append(")");
+			return sb.toString();
+		}
 	}
 }

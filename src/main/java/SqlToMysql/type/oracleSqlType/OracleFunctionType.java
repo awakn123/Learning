@@ -4,14 +4,12 @@ import SqlToMysql.bean.OracleFunction;
 import SqlToMysql.bean.OracleParam;
 import SqlToMysql.bean.OracleReturn;
 import SqlToMysql.bean.SqlBlock;
-import SqlToMysql.type.TypeService;
 import SqlToMysql.statement.SqlParserService;
 import SqlToMysql.statement.SqlStmt;
 import SqlToMysql.type.SqlType;
+import SqlToMysql.type.TypeService;
 import SqlToMysql.util.DataTypeConvert;
-import SqlToMysql.util.ListUtils;
 import com.alibaba.druid.sql.visitor.SQLASTVisitor;
-import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -101,7 +99,6 @@ public class OracleFunctionType extends SqlType implements TypeService<OracleFun
 				content = content.substring(beginIdx + 5, endIdx);
 //				List<SQLStatement> list = SQLUtils.parseStatements(content, JdbcConstants.ORACLE);
 //				List<SqlStmt> list = DruidSqlParser.parse(content, name);
-				System.out.println(content);
 				List<SqlStmt> list = parserService.parse(content, name);
 				return new OracleFunction(name, params, returnType, declares, list, block, hasBegin, hasEnd);
 			} else
@@ -130,16 +127,8 @@ public class OracleFunctionType extends SqlType implements TypeService<OracleFun
 		sb.append("DROP FUNCTION IF EXISTS ").append(func.getName()).append(";\n");//初始化
 		sb.append("DELIMITER$$\n");//初始化
 		sb.append("CREATE FUNCTION ").append(func.getName());//函数名修改
-		if (func.getParams() == null || func.getParams().isEmpty()) {
-			sb.append("()\n");
-		} else {
-			List<String> paramStrs = Lists.newArrayList();
-			func.getParams().stream().forEach((param) -> {
-
-				paramStrs.add(param.toString());
-			});
-			sb.append("(").append(ListUtils.toString(paramStrs)).append(")\n");
-		}
+		sb.append(OracleParam.listToString(func.getParams()));
+		sb.append("\n");
 		String returnType = DataTypeConvert.oracleToMysql(func.getReturnType().getType());
 		sb.append("RETURNS ").append(returnType);
 		if (returnType != null && "varchar".equals(returnType.toLowerCase()))

@@ -1,5 +1,6 @@
 package SqlToMysql.statement;
 
+import SqlToMysql.SqlConfig;
 import SqlToMysql.statement.other.AbstractStatementType;
 import SqlToMysql.statement.other.Statement;
 import com.alibaba.druid.sql.ast.SQLStatement;
@@ -38,23 +39,29 @@ public final class DruidSqlParser {
 				}
 				else if (e.getMessage().contains("TODO")) {
 					stmts.add(new SqlStmt(sql, e.getMessage()));
-					log.error("name:" + name + ", message:" + e.getMessage() + ", sql:" + sql);
+					if (SqlConfig.showParseError)
+						log.error("name:" + name + ", message:" + e.getMessage() + ", sql:" + sql);
 				}
 				else if (lowerSql.startsWith("end"))
 					stmts.add(new SqlStmt(sql));
 				else {
-					stmts.add(new SqlStmt(sql));
-					log.error("name:" + name + ", sql:" + sql, e);
+					stmts.add(new SqlStmt(sql, e.getMessage()));
+					if (SqlConfig.showParseError)
+						log.error("name:" + name + ", sql:" + sql, e);
 				}
 			}
 		}
 		if (temp != null) {
 			try {
-				parseByDruid(temp);
+				SQLStatement statement = parseByDruid(temp);
+				SqlStmt stmt = new SqlStmt(statement);
+				temp = null;
+				stmts.add(stmt);
 			} catch (Exception e) {
-				log.error("name:" + name + ", sql:" + temp, e);
+				if (SqlConfig.showParseError)
+					log.error("name:" + name + ", sql:" + temp, e);
+				stmts.add(new SqlStmt(temp, e.getMessage()));
 			}
-			stmts.add(new SqlStmt(temp));
 		}
 		return stmts;
 	}
