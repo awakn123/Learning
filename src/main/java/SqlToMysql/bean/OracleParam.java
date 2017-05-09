@@ -198,6 +198,8 @@ public class OracleParam {
 			psb.append("(").append(length).append(")");
 		} else if ("VARCHAR".equals(mysqlType))
 			psb.append("(255)");
+		else if ("CHAR".equals(mysqlType))
+			psb.append("(10)");
 		if (StringUtils.isNotBlank(this.defaultValue))
 			psb.append(" default ").append(this.defaultValue);
 		psb.append(";");

@@ -5,13 +5,17 @@ import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.bean.SqlFile;
 import SqlToMysql.split.CreateSqlSplit;
 import SqlToMysql.split.SqlFileSplit;
+import SqlToMysql.util.SqlTestUtils;
 import SqlToMysql.util.SqlUtils;
+import com.alibaba.druid.pool.DruidDataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
+import static Druid.DruidMain.getMysqlDataSource;
 import static SqlToMysql.bean.SqlFile.readFile;
 
 public class OracleToMysql {
@@ -29,7 +33,7 @@ public class OracleToMysql {
 	 *
 	 * @param args
 	 */
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, SQLException {
 		SqlConfig.KeepTransferCursor = false;
 		SqlConfig.KeepType = true;
 		SqlConfig.KeepRowtype = true;
@@ -38,8 +42,8 @@ public class OracleToMysql {
 		SqlConfig.ShowTypeError = true;
 		SqlConfig.showParseError = true;
 		// 1~22
-		String rootPath = "./src/test/sqlWork/e8_oracle/split/programDone/procedure/one/procedure_OracleExprStatement(689)_change.sql";
-		String writePath = "./src/test/sqlWork/e8_oracle/split/programDone/procedure/mysql/one";
+		String rootPath = "./src/test/sqlWork/e8_oracle/split/programDone/procedure/one/ok_procedure_OracleUpdateStatement(310).sql";
+		String writePath = "./src/test/sqlWork/e8_oracle/split/programDone/procedure/mysql/call";
 
 		// 读取并分割为sql块
 		List<SqlFile> sqlFiles = readFile(rootPath);
@@ -49,11 +53,14 @@ public class OracleToMysql {
 		System.out.println(blocks.size());
 		List<OracleBean> beanList = SqlUtils.blockToBean(blocks);
 		System.out.println(beanList.size());
-
 //		beanList.stream().filter(t->t.getParams().stream().filter(op -> DataTypeConvert.ORACLE_TRANSFER_CURSOR.equals(op.getType())).count() == 0).forEach(t-> System.out.println(t));
 //		SqlUtils.splitByFirstSqlType(writePath, "procedure_%s.sql", beanList);
 
-		SqlUtils.listToMysql(writePath, "procedure_OracleExprStatement(689).sql", beanList);
-	}
+//		SqlUtils.listToMysql(writePath, "procedure_OracleExprStatement(689).sql", beanList);
 
+
+		try (DruidDataSource dataSource = getMysqlDataSource()) {
+			SqlTestUtils.testProcedure(beanList, dataSource);
+		}
+	}
 }

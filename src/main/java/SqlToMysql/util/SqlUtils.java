@@ -1,6 +1,7 @@
 package SqlToMysql.util;
 
 import SqlToMysql.bean.OracleBean;
+import SqlToMysql.bean.OracleParam;
 import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.bean.SqlFile;
 import SqlToMysql.statement.O2MVisitor;
@@ -24,6 +25,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class SqlUtils {
 	private static final Logger log = LogManager.getLogger();
@@ -301,4 +303,43 @@ public class SqlUtils {
 		return beanList;
 	}
 
+	/**
+	 * 输出call,用于在空数据库做测试
+	 * @param writePath
+	 * @param name
+	 * @param beanList
+	 * @throws IOException
+	 */
+	public static void outputCall(String writePath, String name, List<OracleBean> beanList) throws IOException {
+		List<String> callStrings = getCall(beanList);
+		SqlUtils.writeFileStr(writePath, name, callStrings);
+	}
+
+	public static List<String> getCall(List<OracleBean> beanList) {
+		return beanList.stream().map(b -> {
+				StringBuilder sb = new StringBuilder("call ");
+				sb.append(b.getName());
+				sb.append("(");
+				if (b.getParams() != null && !b.getParams().isEmpty()) {
+					int in = 0;
+					int out = 0;
+					for (OracleParam op : b.getParams()) {
+						if (op.getType().equals(DataTypeConvert.ORACLE_TRANSFER_CURSOR)) {
+							continue;
+						}
+						if (op.getInout() == null || op.getInout() == OracleParam.InOut.IN) {
+							in++;
+							sb.append(in);
+						} else if (op.getInout() == OracleParam.InOut.OUT || op.getInout() == OracleParam.InOut.INOUT) {
+							out++;
+							sb.append("@"+out);
+						}
+						sb.append(",");
+					}
+					sb.deleteCharAt(sb.length() - 1);
+				}
+				sb.append(");");
+				return sb.toString();
+			}).collect(Collectors.toList());
+	}
 }

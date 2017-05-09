@@ -2,31 +2,41 @@ package Druid;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 public class DruidMain {
-	public static void main(String[] args) throws SQLException {
-	    try (DruidDataSource dataSource = new DruidDataSource()){
-	    	dataSource.setUrl("jdbc:mysql://192.168.7.44:3306/weaver_test");
-			dataSource.setUsername("root");
-			dataSource.setPassword("ecology");
-			dataSource.setInitialSize(1);
-			dataSource.setMinIdle(1);
-			dataSource.setMaxActive(20);
-			dataSource.setMaxWait(60000);
-			dataSource.setTimeBetweenEvictionRunsMillis(60000);
-			dataSource.setMinEvictableIdleTimeMillis(300000);
-			dataSource.setValidationQuery("select 'x'");
-			dataSource.setTestWhileIdle(true);
-			dataSource.setTestOnBorrow(false);
-			dataSource.setTestOnReturn(false);
-			dataSource.setPoolPreparedStatements(false);
-			dataSource.setFilters("stat");
-	    	dataSource.init();
+	private static final Logger log = LogManager.getLogger();
+
+
+	public static DruidDataSource getMysqlDataSource() throws SQLException {
+		DruidDataSource dataSource = new DruidDataSource();
+		dataSource.setUrl("jdbc:mysql://192.168.7.44:3306/weaver_test");
+		dataSource.setUsername("root");
+		dataSource.setPassword("ecology");
+		dataSource.setInitialSize(1);
+		dataSource.setMinIdle(1);
+		dataSource.setMaxActive(20);
+		dataSource.setMaxWait(60000);
+		dataSource.setTimeBetweenEvictionRunsMillis(60000);
+		dataSource.setMinEvictableIdleTimeMillis(300000);
+		dataSource.setValidationQuery("select 'x'");
+		dataSource.setTestWhileIdle(true);
+		dataSource.setTestOnBorrow(false);
+		dataSource.setTestOnReturn(false);
+		dataSource.setPoolPreparedStatements(false);
+		dataSource.setFilters("stat");
+		dataSource.init();
+		return dataSource;
+	}
+	public static void main(String[] args) throws SQLException, IOException {
+		try (DruidDataSource dataSource = getMysqlDataSource()) {
 			DruidPooledConnection conn = dataSource.getConnection();
 			CallableStatement callstmt = conn.prepareCall("call ALBUMPHOTOS_SELECTALL");
 			boolean result = callstmt.execute();
