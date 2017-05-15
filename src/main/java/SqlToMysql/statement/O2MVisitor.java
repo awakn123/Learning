@@ -568,7 +568,9 @@ public class O2MVisitor extends OracleOutputVisitor {
 			SQLBinaryOpExpr expr = ((SQLBinaryOpExpr)x.getExpr());
 			if (SQLBinaryOperator.Assignment.equals(expr.getOperator())) {
 				print("set ");
-				return super.visit(x);
+				super.visit(x);
+				print(";");
+				return false;
 			}
 		}
 		okCounter.decrement("visit.OracleExprStatement");
@@ -1050,6 +1052,8 @@ public class O2MVisitor extends OracleOutputVisitor {
 			}
 		} else if (lowerMethodName.equals("substr"))
 			return super.visit(x);
+		else if (lowerMethodName.equals("replace"))
+			return super.visit(x);
 		else if (lowerMethodName.equals("to_number")) {
 			return doCastFunction(x, "signed");
 		} else if (lowerMethodName.equals("length")) {
@@ -1077,6 +1081,9 @@ public class O2MVisitor extends OracleOutputVisitor {
 		} else if (lowerMethodName.equals("to_date")) {
 			x.setMethodName("STR_TO_DATE");
 			return super.visit(x);
+		}
+		else if (lowerMethodName.equals("splitstr")) {
+			x.setMethodName("FIND_IN_SET");
 		}
 
 		okCounter.decrement("visit.SQLMethodInvokeExpr");

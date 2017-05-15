@@ -2,7 +2,7 @@ package SqlToMysql.split;
 
 import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.bean.SqlFile;
-import SqlToMysql.util.SqlUtils;
+import SqlToMysql.util.SqlSplitUtils;
 import com.google.common.collect.Lists;
 
 import java.io.IOException;
@@ -21,25 +21,6 @@ public interface SqlFileSplit {
 
 	default void splitFileByNum(List<SqlFile> files, int num, String outDir, String name) throws IOException {
 		List<SqlBlock> blocks = this.split(files);
-		this.splitByBlockNum(blocks, num, outDir, name);
-	}
-
-	default void splitByBlockNum(List<SqlBlock> blocks, int num, String outDir, String name) throws IOException {
-		if (num <= 0) return;
-		if (blocks == null || blocks.isEmpty()) return;
-		int start = 0;
-		int end = num;
-		int i=0;
-		while (true) {
-			i++;
-			if (blocks.size() >= end) {
-				SqlUtils.writeFile(outDir, name + i + ".sql", blocks.subList(start, end));
-			} else {
-				SqlUtils.writeFile(outDir, name + i + ".sql", blocks.subList(start, blocks.size()));
-				break;
-			}
-			start = end;
-			end += num;
-		}
+		SqlSplitUtils.splitByBlockNum(blocks, num, outDir, name);
 	}
 }

@@ -48,9 +48,11 @@ public class SqlTestUtils {
 						}
 						j++;
 						if (op.getInout() == null || op.getInout() == OracleParam.InOut.IN) {
-							callstmt.setInt(j, j);
-						} else if (op.getInout() == OracleParam.InOut.OUT || op.getInout() == OracleParam.InOut.INOUT) {
+							callstmt.setInt(j, 1);
+						} else if (op.getInout() == OracleParam.InOut.OUT) {
 							callstmt.setCharacterStream(j, new StringReader(""));
+						} else {
+							callstmt.setCharacterStream(j, new StringReader("1"));
 						}
 					}
 				}

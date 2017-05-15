@@ -29,6 +29,7 @@ public class DataTypeConvert {
 		oracleToMysqlTypeMap.put("DECIMAL", "DECIMAL");
 		oracleToMysqlTypeMap.put("NUMERIC", "INT");
 		oracleToMysqlTypeMap.put("LONG", "BIGINT");
+		oracleToMysqlTypeMap.put("REAL", "DOUBLE");
 	}
 
 	public static String oracleToMysql(String oracleType) {
