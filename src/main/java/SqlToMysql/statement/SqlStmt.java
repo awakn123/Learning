@@ -37,10 +37,12 @@ public class SqlStmt<T> {
 			String lowerOut = out.toLowerCase();
 			//去除from dual
 			int idx = lowerOut.indexOf("from dual");
-			if (idx >= 0) {
+			while (idx >= 0) {
 				sqlOut = new StringBuffer(out);
 				sqlOut.delete(idx, idx+9);
 				out = sqlOut.toString();
+				lowerOut = out.toLowerCase();
+				idx = lowerOut.indexOf("from dual");
 			}
 			// 重复的;号
 			out = StringUtils.replaceAll(out, "(( )?;( )?)+",";");
