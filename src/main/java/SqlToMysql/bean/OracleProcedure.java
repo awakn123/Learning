@@ -14,6 +14,15 @@ public class OracleProcedure extends OracleBean{
 		this.hasEnd = hasEnd;
 	}
 
+	/**
+	 * 测试用
+	 * @param name
+	 * @param params
+	 */
+	public OracleProcedure(String name, List<OracleParam> params) {
+		super(name, null, null, null, null, params);
+	}
+
 	public String toString(){
 		return "OracleProcedure:" + this.getName();
 	}

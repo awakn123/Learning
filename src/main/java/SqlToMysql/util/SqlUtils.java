@@ -187,8 +187,9 @@ public class SqlUtils {
 		// 输出Visitor中的统计
 		O2MVisitor.counter.output();
 		System.out.println(O2MVisitor.counter.size());
+		System.out.println(O2MVisitor.counter.output());
 		System.out.println("------------------------------------------------------------------------------");
-		System.out.println(O2MVisitor.okCounter.output());
+//		System.out.println(O2MVisitor.okCounter.output());
 		System.out.println(MapListUtils.toOutput(O2MVisitor.errorMsgs));
 
 		// 写出到文件

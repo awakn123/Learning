@@ -89,8 +89,9 @@ public class OracleParam {
 			String paramType;
 			InOut paramInOut = null;
 			String defaultValue = null;
-			if (simplePattern.matcher(str).find())
-				paramType = arr[1];
+			if (simplePattern.matcher(str).find()) {
+				paramType = ListUtils.toString(Arrays.asList(Arrays.copyOfRange(arr, 1,arr.length)), "");
+			}
 			else if (setPattern.matcher(str).find()) {
 				paramType = str.substring(str.indexOf(" ") + 1, str.indexOf(":=")).trim();
 				defaultValue = str.substring(str.indexOf(":=")).trim();

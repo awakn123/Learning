@@ -43,11 +43,11 @@ public class OracleViewType extends SqlType implements TypeService<OracleView> {
 
 	@Override
 	public String toMysqlSyntax(OracleView oracleView, Function<Appendable, SQLASTVisitor> f) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("-- -------------------------------------------------------------------------------------------\n");
 		sb.append("-- ").append(oracleView.getName()).append("\n");
 		sb.append("-- -------------------------------------------------------------------------------------------\n");
-		StringBuffer contentOut = new StringBuffer();
+		StringBuilder contentOut = new StringBuilder();
 		oracleView.getSqlList().stream().forEach(sql -> sql.append(contentOut, f));
 		sb.append("CREATE OR REPLACE VIEW  ").append(oracleView.getName()).append(" AS\n");
 		sb.append(contentOut);

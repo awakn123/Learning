@@ -1,5 +1,7 @@
 package SqlToMysql.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.List;
 
 public class ListUtils {
@@ -15,6 +17,8 @@ public class ListUtils {
 			sb.append(o.toString());
 			sb.append(separator);
 		}
-		return sb.substring(0, sb.length() - 1);
+		if (StringUtils.isBlank(separator))
+			return sb.toString();
+		return sb.substring(0, sb.length() - separator.length());
 	}
 }

@@ -27,16 +27,14 @@ public class SqlStmt<T> {
 		return errorMsg;
 	}
 
-	public void append(StringBuffer sb, Function<Appendable, SQLASTVisitor> f) {
+	public void append(StringBuilder sb, Function<Appendable, SQLASTVisitor> f) {
 		if (this.statement instanceof SQLStatement) {
 			SQLStatement s = (SQLStatement) this.statement;
 			StringBuffer sqlOut = new StringBuffer();
 			s.accept(f.apply(sqlOut));
 			String out = SqlUtils.mergeAndTrim(StringUtils.replaceAll(sqlOut.toString(), "\\n", " "));
-			String lowerOut = out.toLowerCase();
 
-			// 重复的;号
-			out = StringUtils.replaceAll(out, ";+",";");
+			String lowerOut = out.toLowerCase();
 			//去除from dual
 			int idx = lowerOut.indexOf("from dual");
 			if (idx >= 0) {
@@ -44,6 +42,8 @@ public class SqlStmt<T> {
 				sqlOut.delete(idx, idx+9);
 				out = sqlOut.toString();
 			}
+			// 重复的;号
+			out = StringUtils.replaceAll(out, "(( )?;( )?)+",";");
 			out = StringUtils.replaceAll(out, ";", ";\n");
 			out = StringUtils.replaceAll(out, "\n ","\n");//去掉句首空格
 			if (out.charAt(out.length() - 2) != ';')
@@ -51,6 +51,6 @@ public class SqlStmt<T> {
 			else
 				sb.append(out);
 		} else
-			sb.append(statement);
+			sb.append(statement != null ? statement.toString() : null);
 	}
 }

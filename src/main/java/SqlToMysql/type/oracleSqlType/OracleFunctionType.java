@@ -116,7 +116,7 @@ public class OracleFunctionType extends SqlType implements TypeService<OracleFun
 	 * @return
 	 */
 	public String toMysqlSyntax(OracleFunction func, Function<Appendable, SQLASTVisitor> f) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("-- -------------------------------------------------------------------------------------------\n");
 		sb.append("-- ").append(func.getName()).append("\n");
 		if ("PIPELINED".equals(func.getReturnType().getType()) || "AGGREGATE".equals(func.getReturnType().getType())) {

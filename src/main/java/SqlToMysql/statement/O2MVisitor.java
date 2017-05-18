@@ -746,7 +746,23 @@ public class O2MVisitor extends OracleOutputVisitor {
 	@Override
 	public boolean visit(Else x) {
 		okCounter.putOrIncrement("visit.Else");
-		return super.visit(x);
+		print("ELSE");
+		incrementIndent();
+		println();
+
+		for (int i = 0, size = x.getStatements().size(); i < size; ++i) {
+			if (i != 0) {
+				println("");
+			}
+			SQLStatement item = x.getStatements().get(i);
+			item.setParent(x);
+			item.accept(this);
+			print(";");
+		}
+		print(";");
+
+		decrementIndent();
+		return false;
 	}
 
 	@Override
@@ -774,8 +790,32 @@ public class O2MVisitor extends OracleOutputVisitor {
 	@Override
 	public boolean visit(OracleIfStatement x) {
 		okCounter.putOrIncrement("visit.OracleIfStatement");
-		super.visit(x);
+		print("IF ");
+		x.getCondition().accept(this);
+		print(" THEN");
+		incrementIndent();
+		println();
+		for (int i = 0, size = x.getStatements().size(); i < size; ++i) {
+			SQLStatement item = x.getStatements().get(i);
+			item.setParent(x);
+			item.accept(this);
+			if (i != size - 1) {
+				println(";");
+			}
+		}
 		print(";");
+		decrementIndent();
+
+		for (ElseIf elseIf : x.getElseIfList()) {
+			println();
+			elseIf.accept(this);
+		}
+
+		if (x.getElseItem() != null) {
+			println();
+			x.getElseItem().accept(this);
+		}
+		print("END IF;");
 		return false;
 	}
 
@@ -1140,6 +1180,13 @@ public class O2MVisitor extends OracleOutputVisitor {
 				print(x.getText().replaceAll("'", "''"));
 			print("'");
 		}
+
+		return false;
+	}
+
+	@Override
+	public boolean visit(SQLListExpr x) {
+		printAndAccept(x.getItems(), ", ");
 
 		return false;
 	}

@@ -10,6 +10,7 @@ import SqlToMysql.type.TypeService;
 import SqlToMysql.util.SqlUtils;
 import com.alibaba.druid.sql.visitor.SQLASTVisitor;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -113,7 +114,14 @@ public class OracleProcedureType extends SqlType implements TypeService<OraclePr
 
 	@Override
 	public String toMysqlSyntax(OracleProcedure proc, Function<Appendable, SQLASTVisitor> f) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sqlOut = new StringBuilder();
+		proc.getSqlList().stream().forEach(sql -> {
+			sql.append(sqlOut, f);
+		});
+		String sqlOutStr = sqlOut.toString();
+		String lowerSqlOut = sqlOutStr.toLowerCase();
+		int returnIdx = lowerSqlOut.indexOf("return;");
+		StringBuilder sb = new StringBuilder();
 		sb.append("-- -------------------------------------------------------------------------------------------\n");
 		sb.append("-- ").append(proc.getName()).append("\n");
 		sb.append("-- -------------------------------------------------------------------------------------------\n");
@@ -122,13 +130,15 @@ public class OracleProcedureType extends SqlType implements TypeService<OraclePr
 		sb.append("CREATE PROCEDURE ").append(proc.getName());//函数名修改
 		sb.append(OracleParam.listToString(proc.getParams()));
 		sb.append("\n");
+		if(returnIdx > 0)
+			sb.append("LABELPROC:");
 		sb.append("BEGIN\n");
 		if (proc.getDeclares() != null) {
 			for (OracleParam op : proc.getDeclares()) {
 				sb.append(op.toDeclareString()).append("\n");
 			}
 		}
-		proc.getSqlList().stream().forEach(sql -> sql.append(sb, f));
+		sb.append(StringUtils.replaceIgnoreCase(sqlOutStr, "return;", "LEAVE LABELPROC;", 64));
 		sb.append("END$$\n");
 		sb.append("DELIMITER;\n");
 		return sb.toString();

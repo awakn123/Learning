@@ -112,11 +112,11 @@ public class OracleTriggerType extends SqlType  implements TypeService<OracleTri
 
 	@Override
 	public String toMysqlSyntax(OracleTrigger tr, Function<Appendable, SQLASTVisitor> f) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("-- -------------------------------------------------------------------------------------------\n");
 		sb.append("-- ").append(tr.getName()).append("\n");
 		sb.append("-- -------------------------------------------------------------------------------------------\n");
-		StringBuffer contentOut = new StringBuffer();
+		StringBuilder contentOut = new StringBuilder();
 		tr.getSqlList().stream().forEach(sql -> sql.append(contentOut, f));
 
 		for (String event : tr.getEvent()) {

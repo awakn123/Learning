@@ -39,8 +39,8 @@ public class OracleToMysql {
 		SqlConfig.ShowTypeError = true;
 		SqlConfig.showParseError = true;
 		// 1~22
-		String rootPath = "./src/test/sqlWork/e8_oracle/procedure/work/c_num/proc_comp_3.sql";
-		String writePath = "./src/test/sqlWork/e8_oracle/procedure/mysqlComplexOutput/c_num";
+		String rootPath = "./src/test/sqlWork/e8_oracle/procedure/work/ce_num/proc_comp_ex_4.sql";
+		String writePath = "./src/test/sqlWork/e8_oracle/procedure/mysqlComplexOutput/ce_num";
 
 		// 读取并分割为sql块
 		List<SqlFile> sqlFiles = readFile(rootPath);
@@ -51,7 +51,7 @@ public class OracleToMysql {
 		List<OracleBean> beanList = SqlUtils.blockToBean(blocks);
 		System.out.println(beanList.size());
 
-		SqlUtils.listToMysql(writePath, "proc_comp_3.sql", beanList);
+		SqlUtils.listToMysql(writePath, "proc_comp_ex_4.sql", beanList);
 
 
 
