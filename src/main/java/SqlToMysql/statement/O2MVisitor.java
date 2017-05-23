@@ -48,7 +48,9 @@ public class O2MVisitor extends OracleOutputVisitor {
 	public static CounterMap<String> okCounter = new CounterMap<String>();
 	public static Map<String, List<String>> errorMsgs = Maps.newHashMap();
 	private static Set<String> sameFunctionNames = Sets.newHashSet("getpinyin", "lower", "concat", "fn_split", "table");
-	private static Set<String> procedureNames = Sets.newHashSet("sysmaintenancelog_proc", "workflow_requestbase_insertnew", "workflow_requestlog_insert_new", "workflow_requestlog_op", "workflow_requestlogcurdate_new");
+	private static Set<String> procedureNames = Sets.newHashSet(
+			"sysmaintenancelog_proc", "workflow_requestbase_insertnew", "workflow_requestlog_insert_new", "workflow_requestlog_op", "workflow_requestlogcurdate_new",
+			"doc_diracl_checkpermissionex1");
 
 	public O2MVisitor(Appendable appender) {
 		super(appender, true);
@@ -786,6 +788,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 
 		decrementIndent();
 		return false;
+//		return super.visit(x);
 	}
 	@Override
 	public boolean visit(OracleIfStatement x) {
@@ -1165,8 +1168,10 @@ public class O2MVisitor extends OracleOutputVisitor {
 	}
 
 	public boolean visit(SQLCharExpr x) {
-		if ((x.getText() == null) || (x.getText().length() == 0)) {
+		if ((x.getText() == null)) {
 			print("NULL");
+		} else if ((x.getText().length() == 0)) {
+			print("''");
 		} else {
 			print("'");
 			String lowerValue = x.getText().toLowerCase();

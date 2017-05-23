@@ -1,17 +1,19 @@
 package SqlToMysql;
 
-import SqlToMysql.bean.OracleBean;
 import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.bean.SqlFile;
 import SqlToMysql.split.CreateSqlSplit;
 import SqlToMysql.split.SqlFileSplit;
-import SqlToMysql.util.SqlUtils;
+import SqlToMysql.type.SqlType;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 
 import static SqlToMysql.bean.SqlFile.readFile;
 
@@ -39,21 +41,67 @@ public class OracleToMysql {
 		SqlConfig.ShowTypeError = true;
 		SqlConfig.showParseError = true;
 		// 1~22
-		String rootPath = "./src/test/sqlWork/e8_oracle/procedure/work/ce_num/proc_comp_ex_4.sql";
-		String writePath = "./src/test/sqlWork/e8_oracle/procedure/mysqlComplexOutput/ce_num";
+		String rootPath = "./src/test/sqlWork/e8_oracle/procedure/mysqldone";
+		String rootPath2 = "./src/test/sqlWork/e8_oracle/procedure/procedure.sql";
+		String rootPath3 = "./src/test/sqlWork/e8_oracle/procedure/procedure_unused.sql";
+		SqlFileSplit sqlSplit = new CreateSqlSplit();
+		String writePath = "./src/test/sqlWork/e8_oracle/procedure";
+
+		List<SqlFile> oracleFiles = readFile(rootPath2);
+		List<SqlBlock> Oracleblocks = sqlSplit.split(oracleFiles);
+		Set<String> oracleNames = Sets.newHashSet();
+		for (SqlBlock block: Oracleblocks) {
+			if (block.getSqlType() == null) {
+				SqlType.getOracleType().stream().filter(sqlType -> sqlType.check(block)).forEach(sqlType -> {
+					block.setSqlType(sqlType);
+					block.splitToObject();
+				});
+			}
+			oracleNames.add(block.getName().replaceAll("\"", "").toUpperCase());
+		}
+		System.out.println(oracleNames.size());
+
+		List<SqlFile> unusedOracleFiles = readFile(rootPath3);
+		List<SqlBlock> unusedOracleblocks = sqlSplit.split(unusedOracleFiles);
+		for (SqlBlock block: unusedOracleblocks) {
+			if (block.getSqlType() == null) {
+				SqlType.getOracleType().stream().filter(sqlType -> sqlType.check(block)).forEach(sqlType -> {
+					block.setSqlType(sqlType);
+					block.splitToObject();
+				});
+			}
+			oracleNames.remove(block.getName().replaceAll("\"", "").toUpperCase());
+		}
+		System.out.println(oracleNames.size());
 
 		// 读取并分割为sql块
 		List<SqlFile> sqlFiles = readFile(rootPath);
 
-		SqlFileSplit sqlSplit = new CreateSqlSplit();
+		System.out.println(sqlFiles.size());
+		List<String> sqls = Lists.newArrayList();
+		sqlFiles.stream().forEach(sqlFile -> sqls.addAll(sqlFile.getContentList()));
+//		SqlUtils.writeFileStr(writePath, "procedureMysqlDone.sql", sqls);
 		List<SqlBlock> blocks = sqlSplit.split(sqlFiles);
 		System.out.println(blocks.size());
-		List<OracleBean> beanList = SqlUtils.blockToBean(blocks);
-		System.out.println(beanList.size());
+		for (SqlBlock block: blocks) {
+			if (block.getSqlType() == null) {
+				SqlType.getMysqlType().stream().filter(sqlType -> sqlType.check(block)).forEach(sqlType -> {
+					block.setSqlType(sqlType);
+					block.splitToObject();
+				});
+			}
+			if (oracleNames.contains(block.getName())){
+				oracleNames.remove(block.getName());
+			} else {
+				System.out.println(block.getName());
+			}
+		}
+		System.out.println("---");
+		System.out.println(oracleNames);
+//		List<OracleBean> beanList = SqlUtils.blockToOracleBean(blocks);
+//		System.out.println(beanList.size());
 
-		SqlUtils.listToMysql(writePath, "proc_comp_ex_4.sql", beanList);
-
-
+//		SqlUtils.listToMysql(writePath, "error_temp.sql", beanList);
 
 //		try (DruidDataSource dataSource = getMysqlDataSource()) {
 //			SqlTestUtils.testProcedure(beanList, dataSource);

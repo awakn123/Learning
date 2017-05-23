@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,7 +32,9 @@ public class SqlFile {
 			sqlFiles.add(new SqlFile(contentList, file.getName()));
 			return sqlFiles;
 		}
-		Arrays.stream(file.listFiles()).forEach(f -> {
+		List<File> fileList = new ArrayList<>();
+		readFileNoDir(file, fileList);
+		fileList.forEach(f -> {
 			List<String> contentList = null;
 			try {
 				contentList = Files.readAllLines(f.toPath());
@@ -41,6 +44,13 @@ public class SqlFile {
 			sqlFiles.add(new SqlFile(contentList, f.getName()));
 		});
 		return sqlFiles;
+	}
+
+	private static void readFileNoDir(File file, List<File> list) {
+		if (!file.isDirectory())
+			list.add(file);
+		else
+			Arrays.stream(file.listFiles()).forEach(f->readFileNoDir(f, list));
 	}
 
 	public String getFileName() {

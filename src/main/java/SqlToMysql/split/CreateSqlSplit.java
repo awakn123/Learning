@@ -29,7 +29,8 @@ public class CreateSqlSplit implements SqlFileSplit {
 
 	public enum CreatePattern {
 		Trigger("^CREATE OR REPLACE TRIGGER \"\\w+\""), Procedure("^CREATE OR REPLACE PROCEDURE \"\\w+\""), Function("^CREATE OR REPLACE FUNCTION \"\\w+\""),
-		View("^CREATE OR REPLACE FORCE VIEW \"\\w+\"");
+		View("^CREATE OR REPLACE FORCE VIEW \"\\w+\""),
+		MysqlProcedure("DROP PROCEDURE IF EXISTS \\w+");
 		private Pattern pattern;
 
 		CreatePattern(String pattern) {

@@ -1,6 +1,7 @@
 package SqlToMysql.type;
 
 import SqlToMysql.bean.SqlBlock;
+import SqlToMysql.type.mysqlType.MysqlProcedureType;
 import SqlToMysql.type.oracleSqlType.OracleFunctionType;
 import SqlToMysql.type.oracleSqlType.OracleProcedureType;
 import SqlToMysql.type.oracleSqlType.OracleTriggerType;
@@ -117,6 +118,12 @@ public class SqlType {
 		return types;
 	}
 
+	public static List<SqlType> getMysqlType() {
+		List<SqlType> types = Lists.newArrayList(
+				MysqlProcedureType.getInstance()
+		);
+		return types;
+	}
 	public static Pattern getCommentPattern() {
 		return Pattern.compile("/\\*.*?\\*/");
 	}

@@ -39,6 +39,9 @@ public class SqlBlock {
 		return sqlList;
 	}
 
+	public String getName() {
+		return name;
+	}
 
 	public void setSqlType(SqlType sqlType) {
 		this.sqlType = sqlType;
