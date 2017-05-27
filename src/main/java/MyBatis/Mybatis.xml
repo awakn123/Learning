@@ -33,6 +33,8 @@
 	<databaseIdProvider type="MyBatis.util.DatabaseIdProvider">
 	</databaseIdProvider>
 	<mappers>
-		<mapper resource="MyBatis/WorkflowBaseMapper.xml"/>
+		<!--mapper resource="MyBatis/mapper/WorkflowBaseMapper.xml"/-->
+		<!--package name="*.mapper"></package 不可行，Mybatis不支持通配符，这是spring的ant匹配模式提供的-->
+		<package name="MyBatis.mapper"></package>
 	</mappers>
 </configuration>

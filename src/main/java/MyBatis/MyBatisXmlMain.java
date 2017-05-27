@@ -2,6 +2,7 @@ package MyBatis;
 
 import MyBatis.bean.HrmAlbumSubcompanyVO;
 import MyBatis.bean.WorkflowBase;
+import MyBatis.mapper.WorkflowBaseMapper;
 import com.google.common.collect.Maps;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.BoundSql;
@@ -37,7 +38,7 @@ public class MyBatisXmlMain {
 		Map params = Maps.newHashMap();
 //		RecordSet rs = new RecordSet();
 //		params.put("id", 1);//这里放置参数。这个sql不需要参数，就先注掉了。
-		String sql = getSql("MyBatis.WorkflowBaseMapper.selectHrmAlbumSubcompanyVO", params);
+		String sql = getSql("MyBatis.mapper.WorkflowBaseMapper.selectHrmAlbumSubcompanyVO", params);
 //		rs.executeQuery(sql);
 		System.out.println(sql);
 
@@ -47,7 +48,7 @@ public class MyBatisXmlMain {
 						 " from HrmSubcompany a LEFT JOIN AlbumSubcompany b ON a.id=b.subcompanyId"+
 					"order by a.supsubcomid,a.id";
 		} else if ("mysql".equals(dbType)) {
-			sql = getSql("MyBatis.WorkflowBaseMapper.selectHrmAlbumSubcompanyVO", params);
+			sql = getSql("MyBatis.mapper.WorkflowBaseMapper.selectHrmAlbumSubcompanyVO", params);
 		} else {
 			sql = "select a.*,b.*,(convert(decimal(18,2),b.albumsize/(1000+0.0))) as totalsize,(convert(decimal(18,2),(b.albumSizeUsed/(1000+0.0)))) as usesize, (convert(decimal(18,2),(b.albumSize-b.albumSizeUsed)/(1000+0.0))) as remainsize, (case b.albumSize when 0 then 0 else (convert(decimal(18,2),(b.albumSizeUsed/(b.albumSize+0.0)*100))) end ) AS rate " +
 					" from HrmSubcompany a LEFT JOIN AlbumSubcompany b ON a.id=b.subcompanyId"+

@@ -1,4 +1,4 @@
-package MyBatis;
+package MyBatis.mapper;
 
 import MyBatis.bean.HrmAlbumSubcompanyVO;
 import MyBatis.bean.WorkflowBase;

@@ -1,6 +1,7 @@
 package MyBatis;
 
 import Druid.DruidMain;
+import MyBatis.mapper.WorkflowBaseMapper;
 import com.google.common.collect.Maps;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.Environment;
@@ -26,15 +27,15 @@ public class MyBatisNoXmlMain {
 		Map params = Maps.newHashMap();
 		params.put("isOracle", null);
 		params.put("isMysql", 1);
-		BoundSql bs = configuration.getMappedStatement("MyBatis.WorkflowBaseMapper.select1").getBoundSql(params);
+		BoundSql bs = configuration.getMappedStatement("MyBatis.mapper.WorkflowBaseMapper.select1").getBoundSql(params);
 		System.out.println(bs.getSql());
 		try (SqlSession session = sqlSessionFactory.openSession()) {
 //			WorkflowBaseMapper mapper = session.getMapper(WorkflowBaseMapper.class);
 //			WorkflowBase wb = mapper.selectWorkflowBase(1);
 //			System.out.println(wb.getWorkflowName());
-//			WorkflowBase wb = (WorkflowBase) session.selectOne("MyBatis.WorkflowBaseMapper.selectWorkflowBase", 1);
+//			WorkflowBase wb = (WorkflowBase) session.selectOne("MyBatis.mapper.WorkflowBaseMapper.selectWorkflowBase", 1);
 //			System.out.println(wb.getWorkflowName());
-//			int i = (int) session.selectOne("MyBatis.WorkflowBaseMapper.select1", params);
+//			int i = (int) session.selectOne("MyBatis.mapper.WorkflowBaseMapper.select1", params);
 //			System.out.println(i);
 		}
 	}
