@@ -317,6 +317,14 @@ public class O2MVisitor extends OracleOutputVisitor {
 
 	public boolean visit(OracleSelectTableReference x) {
 		okCounter.putOrIncrement("visit.OracleSelectTableReference");
+		if (x.getExpr() instanceof SQLIdentifierExpr) {
+			SQLIdentifierExpr expr = (SQLIdentifierExpr)x.getExpr();
+			if (expr.getName().equalsIgnoreCase("user_tables")) {
+				expr.setName("information_schema.tables");
+			} else if (expr.getName().equalsIgnoreCase("user_tab_columns")) {
+				expr.setName("information_schema.Columns");
+			}
+		}
 		return super.visit(x);
 //		return outContent(a -> super.visit(a), x, "visit.OracleSelectTableReference");
 	}

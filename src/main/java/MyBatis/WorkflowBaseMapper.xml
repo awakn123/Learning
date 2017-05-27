@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MyBatis.WorkflowBaseMapper">
+	<select id="select1" resultType="int">
+		select
+		<if test="isMysql =1">
+		ifnull(a,0)
+		</if>
+		<if test="isOracle = 1">
+			nvl(a,0)
+		</if>
+		 from a, b
+	</select>
+
+	<select id="selectHrmAlbumSubcompanyVO" resultType="MyBatis.bean.HrmAlbumSubcompanyVO" databaseId="mysql">
+			select a.*,b.*,(convert(b.albumsize/(1000+0.0) , decimal(18,2))) as totalsize,
+			(convert((b.albumSizeUsed/(1000+0.0)),decimal(18,2))) as usesize,
+			(convert((b.albumSize-b.albumSizeUsed)/(1000+0.0),decimal(18,2))) as remainsize,
+			(case b.albumSize when 0 then 0 else (convert((b.albumSizeUsed/(b.albumSize+0.0)*100),decimal(18,2))) end ) AS rate
+		from HrmSubcompany a LEFT JOIN AlbumSubcompany b ON a.id=b.subcompanyId
+		order by a.supsubcomid,a.id
+	</select>
+	<select id="selectHrmAlbumSubcompanyVO" resultType="MyBatis.bean.HrmAlbumSubcompanyVO" databaseId="oracle">
+		select  a.*,b.*,
+		round(b.albumsize/(1000+0.0),2) as totalsize,
+		round(b.albumSizeUsed/(1000+0.0),2) as usesize,
+		round((b.albumSize-b.albumSizeUsed)/(1000+0.0),2) as remainsize,
+		(case b.albumSize when 0 then 0 else round((b.albumSizeUsed/(b.albumSize+0.0)*100),2) end ) AS rate
+		from HrmSubcompany a LEFT JOIN AlbumSubcompany b ON a.id=b.subcompanyId
+		order by a.supsubcomid,a.id
+	</select>
+	<select id="selectHrmAlbumSubcompanyVO" resultType="MyBatis.bean.HrmAlbumSubcompanyVO" databaseId="sqlserver">
+		select a.*,b.*,(convert(decimal(18,2),b.albumsize/(1000+0.0))) as totalsize,
+		(convert(decimal(18,2),(b.albumSizeUsed/(1000+0.0)))) as usesize,
+		(convert(decimal(18,2),(b.albumSize-b.albumSizeUsed)/(1000+0.0))) as remainsize,
+		(case b.albumSize when 0 then 0 else (convert(decimal(18,2),(b.albumSizeUsed/(b.albumSize+0.0)*100))) end ) AS rate
+		from HrmSubcompany a LEFT JOIN AlbumSubcompany b ON a.id=b.subcompanyId
+		order by a.supsubcomid,a.id
+	</select>
+
+</mapper>

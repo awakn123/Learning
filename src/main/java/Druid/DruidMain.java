@@ -6,10 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.sql.CallableStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class DruidMain {
 	private static final Logger log = LogManager.getLogger();
@@ -38,7 +35,9 @@ public class DruidMain {
 	public static void main(String[] args) throws SQLException, IOException {
 		try (DruidDataSource dataSource = getMysqlDataSource()) {
 			DruidPooledConnection conn = dataSource.getConnection();
-			CallableStatement callstmt = conn.prepareCall("call ALBUMPHOTOS_SELECTALL");
+			CallableStatement callstmt = conn.prepareCall("call ALBUMPHOTOS_SELECTALL(?,?)");
+			callstmt.registerOutParameter(1, Types.INTEGER);
+			callstmt.registerOutParameter(2, Types.VARCHAR);
 			boolean result = callstmt.execute();
 			System.out.println(result);
 			ResultSet rs = callstmt.getResultSet();
@@ -57,6 +56,9 @@ public class DruidMain {
 				count++;
 			}
 			System.out.println(count);
+			System.out.println("----------------------------value end-----------------------------");
+			System.out.println(callstmt.getInt(1));
+			System.out.println(callstmt.getString(2));
 		}
 	}
 }
