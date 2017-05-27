@@ -12,6 +12,6 @@ public class DatabaseIdProvider implements org.apache.ibatis.mapping.DatabaseIdP
 
 	@Override
 	public String getDatabaseId(DataSource dataSource) throws SQLException {
-		return "mysql";
+		return "oracle";
 	}
 }

@@ -1,9 +1,10 @@
 package MyBatis;
 
+import MyBatis.bean.Author;
 import MyBatis.bean.HrmAlbumSubcompanyVO;
 import MyBatis.bean.WorkflowBase;
+import MyBatis.mapper.BlogMapper;
 import MyBatis.mapper.WorkflowBaseMapper;
-import com.google.common.collect.Maps;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.SqlSession;
@@ -18,7 +19,6 @@ import java.util.Map;
 public class MyBatisXmlMain {
 	public static void main(String[] args) throws IOException {
 		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
-		String dbType = "mysql";
 
 		// 全面使用MyBatis
 		SqlSession session = sqlSessionFactory.openSession();
@@ -28,12 +28,21 @@ public class MyBatisXmlMain {
 			WorkflowBase workflowBase = mapper.selectWorkflowBase(1);
 			// xml式
 			List<HrmAlbumSubcompanyVO> voList = mapper.selectHrmAlbumSubcompanyVO();
-			System.out.println(workflowBase.getWorkflowName());
-			System.out.println(voList.size());
+//			System.out.println(workflowBase.getWorkflowName());
+//			System.out.println(voList.size());
+//			System.out.println(voList.get(0).getToTALsize());
+			Author author = new Author();
+			author.setUsername("1");
+			author.setPassword("1");
+			author.setEmail("2@126.com");
+			System.out.println(author.getId());
+			BlogMapper blogMapper = session.getMapper(BlogMapper.class);
+			blogMapper.insertAuthor(author);
+			System.out.println(author.getId());
 		} finally{
 			session.close();
 		}
-
+/*
 		// 使用MyBatis的Sql解析器
 		Map params = Maps.newHashMap();
 //		RecordSet rs = new RecordSet();
@@ -43,6 +52,7 @@ public class MyBatisXmlMain {
 		System.out.println(sql);
 
 		// 只有Mysql使用MyBatis
+		String dbType = "mysql";
 		if ("oracle".equals(dbType)) {
 			sql = "select  a.*,b.*,round(b.albumsize/(1000+0.0),2) as totalsize,round(b.albumSizeUsed/(1000+0.0),2) as usesize, round((b.albumSize-b.albumSizeUsed)/(1000+0.0),2) as remainsize, (case b.albumSize when 0 then 0 else round((b.albumSizeUsed/(b.albumSize+0.0)*100),2) end ) AS rate " +
 						 " from HrmSubcompany a LEFT JOIN AlbumSubcompany b ON a.id=b.subcompanyId"+
@@ -55,7 +65,7 @@ public class MyBatisXmlMain {
 					"order by a.supsubcomid,a.id";
 		}
 //		rs.executeQuery(sql);
-		System.out.println(sql);
+		System.out.println(sql);*/
 	}
 
 	private static SqlSessionFactory getSqlSessionFactory() throws IOException {

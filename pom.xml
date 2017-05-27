@@ -25,7 +25,7 @@
 		<dependency>
 			<groupId>org.mybatis</groupId>
 			<artifactId>mybatis</artifactId>
-			<version>3.4.2</version>
+			<version>3.4.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -54,6 +54,12 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.42</version>
 		</dependency>
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<version>12.1.0.1-atlassian-hosted</version>
+		</dependency>
+
 
 		<!-- 拼音 -->
 		<dependency>

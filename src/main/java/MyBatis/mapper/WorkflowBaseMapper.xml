@@ -11,9 +11,9 @@
 		</if>
 		 from a, b
 	</select>
-
 	<select id="selectHrmAlbumSubcompanyVO" resultType="MyBatis.bean.HrmAlbumSubcompanyVO" databaseId="mysql">
-			select a.*,b.*,(convert(b.albumsize/(1000+0.0) , decimal(18,2))) as totalsize,
+			select
+			a.*,b.*,(convert(b.albumsize/(1000+0.0) , decimal(18,2))) as total_size,
 			(convert((b.albumSizeUsed/(1000+0.0)),decimal(18,2))) as usesize,
 			(convert((b.albumSize-b.albumSizeUsed)/(1000+0.0),decimal(18,2))) as remainsize,
 			(case b.albumSize when 0 then 0 else (convert((b.albumSizeUsed/(b.albumSize+0.0)*100),decimal(18,2))) end ) AS rate
@@ -38,4 +38,9 @@
 		order by a.supsubcomid,a.id
 	</select>
 
+
+
+	<select id="selectBlog" resultMap="MyBatis.mapper.BlogMapper.blogResult">
+		select * from blog where id = #{id} order by ${orderColumn}
+	</select>
 </mapper>
