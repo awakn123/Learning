@@ -1,27 +1,30 @@
 package MyBatis;
 
-import MyBatis.bean.Author;
-import MyBatis.bean.HrmAlbumSubcompanyVO;
-import MyBatis.bean.WorkflowBase;
-import MyBatis.mapper.BlogMapper;
 import MyBatis.mapper.WorkflowBaseMapper;
+import com.google.common.collect.Maps;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.BoundSql;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Map;
 
 public class MyBatisXmlMain {
 	public static void main(String[] args) throws IOException {
 		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
 
+		String sql = getSql(WorkflowBaseMapper.class, "selectHrmAlbumSubcompanyVO");
+		System.out.println(sql);
+		// 测试使用#{}读取文件
+		Map params = Maps.newHashMap();
+		params.put("id", 1);
+		params.put("orderColumn", "name");
+		sql = getSql(WorkflowBaseMapper.class, "selectBlog", params);
+		System.out.println(sql);
 		// 全面使用MyBatis
-		SqlSession session = sqlSessionFactory.openSession();
+		/*SqlSession session = sqlSessionFactory.openSession();
 		try {
 			WorkflowBaseMapper mapper = session.getMapper(WorkflowBaseMapper.class);
 			// 注解式
@@ -41,7 +44,7 @@ public class MyBatisXmlMain {
 			System.out.println(author.getId());
 		} finally{
 			session.close();
-		}
+		}*/
 /*
 		// 使用MyBatis的Sql解析器
 		Map params = Maps.newHashMap();
@@ -77,5 +80,32 @@ public class MyBatisXmlMain {
 	private static String getSql(String key, Map params) throws IOException {
 		BoundSql bs = getSqlSessionFactory().getConfiguration().getMappedStatement(key).getBoundSql(params);
 		return bs.getSql();
+	}
+
+	public static String getSql(String key, Object param) throws IOException {
+		BoundSql bs = getSqlSessionFactory().getConfiguration().getMappedStatement(key).getBoundSql(param);
+		return bs.getSql();
+	}
+
+	/**
+	 * 根据mapper文件读取sql
+	 * @param c
+	 * @param id
+	 * @param param
+	 * @return
+	 */
+	public static String getSql(Class c, String id, Object param) throws IOException {
+		String key = c.getName() + "." + id;
+		return getSql(key, param);
+	}
+
+	/**
+	 *
+	 * @param c
+	 * @param id
+	 * @return
+	 */
+	public static String getSql(Class c, String id) throws IOException {
+		return getSql(c, id, null);
 	}
 }

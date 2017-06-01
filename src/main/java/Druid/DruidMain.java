@@ -14,7 +14,7 @@ public class DruidMain {
 
 	public static DruidDataSource getMysqlDataSource() throws SQLException {
 		DruidDataSource dataSource = new DruidDataSource();
-		dataSource.setUrl("jdbc:mysql://192.168.7.44:3306/weaver_test");
+		dataSource.setUrl("jdbc:mysql://192.168.7.44:3306/weaver_test?characterEncoding=utf8");
 		dataSource.setUsername("root");
 		dataSource.setPassword("ecology");
 		dataSource.setInitialSize(1);
@@ -35,12 +35,11 @@ public class DruidMain {
 	public static void main(String[] args) throws SQLException, IOException {
 		try (DruidDataSource dataSource = getMysqlDataSource()) {
 			DruidPooledConnection conn = dataSource.getConnection();
-			CallableStatement callstmt = conn.prepareCall("call ALBUMPHOTOS_SELECTALL(?,?)");
-			callstmt.registerOutParameter(1, Types.INTEGER);
-			callstmt.registerOutParameter(2, Types.VARCHAR);
-			boolean result = callstmt.execute();
-			System.out.println(result);
-			ResultSet rs = callstmt.getResultSet();
+//			ResultSet rs = testCall(conn);
+			PreparedStatement ps = conn.prepareStatement("SELECT id FROM HtmlLabelIndex WHERE indexdesc = ?");
+			ps.setString(1, "主目录");
+			ps.execute();
+			ResultSet rs = ps.getResultSet();
 			ResultSetMetaData m = rs.getMetaData();
 			System.out.println("--------------------column start----------------------------");
 			for (int i=1;i<=m.getColumnCount();i++) {
@@ -57,8 +56,16 @@ public class DruidMain {
 			}
 			System.out.println(count);
 			System.out.println("----------------------------value end-----------------------------");
-			System.out.println(callstmt.getInt(1));
-			System.out.println(callstmt.getString(2));
 		}
+	}
+
+	private static ResultSet testCall(DruidPooledConnection conn) throws SQLException {
+		CallableStatement callstmt = conn.prepareCall("call HTMLLABELINDEX_SELECT_BYDESC(?,?,?)");
+		callstmt.setString(1, "主目录");
+		callstmt.registerOutParameter(2, Types.INTEGER);
+		callstmt.registerOutParameter(3, Types.VARCHAR);
+		boolean result = callstmt.execute();
+		System.out.println(result);
+		return callstmt.getResultSet();
 	}
 }
