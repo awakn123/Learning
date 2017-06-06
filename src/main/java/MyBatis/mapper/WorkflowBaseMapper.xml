@@ -41,6 +41,6 @@
 
 
 	<select id="selectBlog" resultMap="MyBatis.mapper.BlogMapper.blogResult">
-		select * from blog where id = #{id} order by ${orderColumn}
+		select * from blog where id = ${_parameter[0]} order by ${_parameter[1]}
 	</select>
 </mapper>
