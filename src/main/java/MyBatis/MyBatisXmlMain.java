@@ -1,13 +1,17 @@
 package MyBatis;
 
+import MyBatis.bean.HrmAlbumSubcompanyVO;
+import MyBatis.bean.WorkflowBase;
 import MyBatis.mapper.WorkflowBaseMapper;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.BoundSql;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 public class MyBatisXmlMain {
@@ -24,27 +28,27 @@ public class MyBatisXmlMain {
 		sql = getSql(WorkflowBaseMapper.class, "selectBlog", 1, "name");
 		System.out.println(sql);
 		// 全面使用MyBatis
-		/*SqlSession session = sqlSessionFactory.openSession();
+		SqlSession session = sqlSessionFactory.openSession();
 		try {
 			WorkflowBaseMapper mapper = session.getMapper(WorkflowBaseMapper.class);
 			// 注解式
 			WorkflowBase workflowBase = mapper.selectWorkflowBase(1);
 			// xml式
 			List<HrmAlbumSubcompanyVO> voList = mapper.selectHrmAlbumSubcompanyVO();
-//			System.out.println(workflowBase.getWorkflowName());
-//			System.out.println(voList.size());
-//			System.out.println(voList.get(0).getToTALsize());
-			Author author = new Author();
+			System.out.println(workflowBase.getWorkflowName());
+			System.out.println(voList.size());
+			System.out.println(voList.get(0).getToTALsize());
+			/*Author author = new Author();
 			author.setUsername("1");
 			author.setPassword("1");
 			author.setEmail("2@126.com");
 			System.out.println(author.getId());
 			BlogMapper blogMapper = session.getMapper(BlogMapper.class);
 			blogMapper.insertAuthor(author);
-			System.out.println(author.getId());
+			System.out.println(author.getId());*/
 		} finally{
 			session.close();
-		}*/
+		}
 		// 使用MyBatis的Sql解析器
 /*		Map params = Maps.newHashMap();
 //		RecordSet rs = new RecordSet();

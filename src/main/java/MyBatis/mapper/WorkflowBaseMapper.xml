@@ -41,6 +41,10 @@
 
 
 	<select id="selectBlog" resultMap="MyBatis.mapper.BlogMapper.blogResult">
-		select * from blog where id = ${_parameter[0]} order by ${_parameter[1]}
+			<if test="_databaseId=='mysql' || _databaseId=='oracle'">
+		<![CDATA[
+			select * from blog where id = ${_parameter[0]} order by ${_parameter[1]}
+		]]>
+			</if>
 	</select>
 </mapper>
