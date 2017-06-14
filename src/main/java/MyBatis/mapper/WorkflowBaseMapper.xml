@@ -11,7 +11,12 @@
 		</if>
 		 from a, b
 	</select>
-	<select id="selectHrmAlbumSubcompanyVO" resultType="MyBatis.bean.HrmAlbumSubcompanyVO" databaseId="mysql">
+	<resultMap id="hrmAlbumSubcompanyVO" type="MyBatis.bean.HrmAlbumSubcompanyVO">
+		<id property="id" column="user_id" />
+		<result property="toTALsize" column="total_size"/>
+		<result property="arr[0]" column="id" javaType="int"/>
+	</resultMap>
+	<select id="selectHrmAlbumSubcompanyVO" resultMap="hrmAlbumSubcompanyVO" databaseId="mysql">
 			select
 			a.*,b.*,(convert(b.albumsize/(1000+0.0) , decimal(18,2))) as total_size,
 			(convert((b.albumSizeUsed/(1000+0.0)),decimal(18,2))) as usesize,

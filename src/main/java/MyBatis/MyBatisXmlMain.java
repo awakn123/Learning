@@ -38,6 +38,7 @@ public class MyBatisXmlMain {
 			System.out.println(workflowBase.getWorkflowName());
 			System.out.println(voList.size());
 			System.out.println(voList.get(0).getToTALsize());
+			System.out.println(voList.get(0).getArr()[0]);
 			/*Author author = new Author();
 			author.setUsername("1");
 			author.setPassword("1");
