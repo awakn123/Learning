@@ -5,6 +5,7 @@
 	<resultMap id="blogResult" type="MyBatis.bean.Blog">
 		<id property="id" column="id" />
 		<result property="title" column="blog_title"/>
+		<result property="varBin" column="var_bin" />
 		<!-- 关联属性中实体类的写法 -->
 		<association property="author" javaType="MyBatis.bean.Author">
 			<id property="id" column="author_id"/>

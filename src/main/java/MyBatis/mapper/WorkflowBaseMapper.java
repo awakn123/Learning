@@ -1,10 +1,12 @@
 package MyBatis.mapper;
 
+import MyBatis.bean.Blog;
 import MyBatis.bean.HrmAlbumSubcompanyVO;
 import MyBatis.bean.WorkflowBase;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Map;
 
 public interface WorkflowBaseMapper {
 
@@ -13,4 +15,7 @@ public interface WorkflowBaseMapper {
 
 	List<HrmAlbumSubcompanyVO> selectHrmAlbumSubcompanyVO();
 
+	List<Blog> selectWithParams(Map<String, Object> map);
+
+	String select1();
 }

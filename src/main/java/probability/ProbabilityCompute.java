@@ -5,13 +5,13 @@ import org.apache.commons.math3.distribution.BinomialDistribution;
 public class ProbabilityCompute {
 	public static void main(String[] args) {
 		double p = 0.035;
-		int k = 11;
-//		int n = 300;
+		int k = 8;
+//		int n = 300
 //		double result = computeProbablity(p, k, n);
 //		System.out.println(result);
-		System.out.println(computeNeedNum(p, k, 0.5) * 168);
-		System.out.println(computeNeedNum(p, k, 0.9) * 168);
-		System.out.println(computeNeedNum(p, k, 0.99) * 168);
+		System.out.println(computeNeedNum(p, k, 0.5));
+		System.out.println(computeNeedNum(p, k, 0.9));
+		System.out.println(computeNeedNum(p, k, 0.99));
 	}
 
 	/**
@@ -29,7 +29,7 @@ public class ProbabilityCompute {
 		int gtn = 0;
 		double ltp = 0d;
 		int ltn = 0;
-		double sq = 0.01;
+		double sq = 0.005;
 		int cn = 0;
 		double cp = 0d;
 		while (Math.abs(gtp - needp) > sq && Math.abs(ltp - needp) > sq) {
@@ -48,7 +48,13 @@ public class ProbabilityCompute {
 				ltn -= size;
 				ltp = computeProbablity(p, k, ltn);
 			} else if (gtp> needp && ltp < needp) {
-				cn = (gtn + ltn) / 2;
+				if (gtn == ltn)
+					break;
+				if (gtn - ltn <= 10) {
+					cn = ltn + 1;
+				} else {
+					cn = (gtn + ltn) / 2;
+				}
 				cp = computeProbablity(p, k, cn);
 				if (cp > needp)  {
 					gtp = cp;

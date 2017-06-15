@@ -1,13 +1,19 @@
 package MyBatis;
 
+import MyBatis.bean.Blog;
 import MyBatis.bean.HrmAlbumSubcompanyVO;
 import MyBatis.bean.WorkflowBase;
+import MyBatis.mapper.BlogMapper;
 import MyBatis.mapper.WorkflowBaseMapper;
+import MyBatis.util.SqlWrapper;
+import com.google.common.collect.Maps;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,19 +21,53 @@ import java.util.List;
 import java.util.Map;
 
 public class MyBatisXmlMain {
+
+	private static final Logger log = LogManager.getLogger();
+
 	public static void main(String[] args) throws IOException {
-		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
 
 		String sql;
+		try (SqlSession session = sqlSessionFactory.openSession()) {
+			BlogMapper mapper = session.getMapper(BlogMapper.class);
+			List<Blog> blogs = mapper.selectBlog();
+			System.out.println(blogs.size());
+			System.out.println("byte[]:" + blogs.get(0).getVarBin());
+			System.out.println("byteToString: " + new String(blogs.get(0).getVarBin()));
+		}
+
 //		String sql = getSql(WorkflowBaseMapper.class, "selectHrmAlbumSubcompanyVO");
 //		System.out.println(sql);
 		// 测试使用#{}读取文件
 //		Map params = Maps.newHashMap();
 //		params.put("id", 1);
 //		params.put("orderColumn", "name");
-		sql = getSql(WorkflowBaseMapper.class, "selectBlog", 1, "name");
-		System.out.println(sql);
-		// 全面使用MyBatis
+//		sql = getSql(WorkflowBaseMapper.class, "selectBlog", 1, "name");
+//		System.out.println(sql);
+
+//		example();
+//		exampleForSqlWrapper();
+	}
+
+	private static void exampleForSqlWrapper() {
+		Map<String, Object> map = Maps.newHashMap();
+		map.put("id", 1);
+		map.put("title", "title");
+//		map.put("author", "author");
+		try (SqlSession session = sqlSessionFactory.openSession()) {
+			WorkflowBaseMapper mapper = session.getMapper(WorkflowBaseMapper.class);
+			List<Blog> blogs = mapper.selectWithParams(map);
+			System.out.println(blogs.size());
+			String s = mapper.select1();
+			System.out.println(s);
+		}
+
+		SqlWrapper sqlWrapper = getSqlWrapper(WorkflowBaseMapper.class, "selectWithParams", map);
+//		rs.executeQuery(sqlWrapper.getSql(), sqlWrapper.getParams());
+//		System.out.println(sqlWrapper);
+	}
+
+	private static void example() {
+		String sql;// 全面使用MyBatis
 		SqlSession session = sqlSessionFactory.openSession();
 		try {
 			WorkflowBaseMapper mapper = session.getMapper(WorkflowBaseMapper.class);
@@ -51,15 +91,16 @@ public class MyBatisXmlMain {
 			session.close();
 		}
 		// 使用MyBatis的Sql解析器
-/*		Map params = Maps.newHashMap();
+		Map params = Maps.newHashMap();
 //		RecordSet rs = new RecordSet();
 //		params.put("id", 1);//这里放置参数。这个sql不需要参数，就先注掉了。
-		String sql = getSql("MyBatis.mapper.WorkflowBaseMapper.selectHrmAlbumSubcompanyVO", params);
+		sql = getSql("MyBatis.mapper.WorkflowBaseMapper.selectHrmAlbumSubcompanyVO", params);
 //		rs.executeQuery(sql);
-		System.out.println(sql);*/
+
+		System.out.println(sql);
 
 		// 只有Mysql使用MyBatis
-		/*String dbType = "mysql";
+		String dbType = "mysql";
 		if ("oracle".equals(dbType)) {
 			sql = "select  a.*,b.*,round(b.albumsize/(1000+0.0),2) as totalsize,round(b.albumSizeUsed/(1000+0.0),2) as usesize, round((b.albumSize-b.albumSizeUsed)/(1000+0.0),2) as remainsize, (case b.albumSize when 0 then 0 else round((b.albumSizeUsed/(b.albumSize+0.0)*100),2) end ) AS rate " +
 						 " from HrmSubcompany a LEFT JOIN AlbumSubcompany b ON a.id=b.subcompanyId"+
@@ -72,29 +113,55 @@ public class MyBatisXmlMain {
 					"order by a.supsubcomid,a.id";
 		}
 //		rs.executeQuery(sql);
-		System.out.println(sql);*/
+		System.out.println(sql);
 	}
 
-	private static SqlSessionFactory getSqlSessionFactory() throws IOException {
-		String resource = "MyBatis/Mybatis.xml";
-		InputStream inputStream = Resources.getResourceAsStream(resource);
-		return new SqlSessionFactoryBuilder().build(inputStream);
+	public static final SqlSessionFactory sqlSessionFactory = createSqlSessionFactory();
+
+	private static SqlSessionFactory createSqlSessionFactory(){
+		try {String resource = "MyBatis/Mybatis.xml";
+			InputStream inputStream = Resources.getResourceAsStream(resource);
+			return new SqlSessionFactoryBuilder().build(inputStream);
+		} catch (IOException e) {
+			log.error("读取MyBatis配置失败");
+			return null;
+		}
 	}
 
-	private static String getSql(String key, Map params) throws IOException {
-		BoundSql bs = getSqlSessionFactory().getConfiguration().getMappedStatement(key).getBoundSql(params);
-		return bs.getSql();
+	public static SqlWrapper getSqlWrapper(Class c, String id, Object... params) {
+		String key = c.getName() + "." + id;
+		return getSqlWrapper(key, params);
 	}
 
-	public static String getSql(String key, Object param) throws IOException {
-		BoundSql bs = getSqlSessionFactory().getConfiguration().getMappedStatement(key).getBoundSql(param);
-		return bs.getSql();
+	public static SqlWrapper getSqlWrapper(String key, Object... params) {
+		Object parseParams;
+		if (params == null || params.length == 0) {
+			parseParams = null;
+		} else if (params.length == 1)
+			parseParams = params[0];
+		else
+			parseParams = params;
+		BoundSql bs = sqlSessionFactory.getConfiguration().getMappedStatement(key).getBoundSql(parseParams);
+		return new SqlWrapper(bs, parseParams, sqlSessionFactory.getConfiguration());
+	}
+	/**
+	 * 通过javabean或Map来读取sql
+	 * @param key
+	 * @param param
+	 * @return
+	 */
+	public static String getSql(String key, Object param) {
+		return getSqlWrapper(key, param).getSql();
+	}
+	/**
+	 * 读取不需要参数的sql
+	 * @param key
+	 * @return
+	 */
+	public static String getSql(String key) {
+		return getSql(key, null);
 	}
 
-	public static String getSql(String key, Object... param) throws IOException {
-		BoundSql bs = getSqlSessionFactory().getConfiguration().getMappedStatement(key).getBoundSql(param);
-		return bs.getSql();
-	}
 	/**
 	 * 根据mapper文件读取sql
 	 * @param c
@@ -102,38 +169,29 @@ public class MyBatisXmlMain {
 	 * @param param
 	 * @return
 	 */
-	public static String getSql(Class c, String id, Object param) throws IOException {
-		String key = c.getName() + "." + id;
-		return getSql(key, param);
-	}
-	public static String getSql(Class c, String id, Object... param) throws IOException {
+	public static String getSql(Class c, String id, Object param) {
 		String key = c.getName() + "." + id;
 		return getSql(key, param);
 	}
 
-
-//	public static String getSql(Class c, String id, String param) throws IOException {
-//		return getSql(c, id, new String[]{param});
-//	}
-//
-//	public static String getSql(Class c, String id, String... params) throws IOException {
-//		String key = c.getName() + "." + id;
-//		Map<String, String> map = Maps.newHashMap();
-//		int i =0;
-//		for (String param: params) {
-//			i++;
-//			map.put("_"+ i, param);
-//		}
-//		return getSql(key, map);
-//	}
-
+	/**
+	 * 支持传入多个参数
+	 * @param c
+	 * @param id
+	 * @param param
+	 * @return
+	 */
+	public static String getSql(Class c, String id, Object... param) {
+		String key = c.getName() + "." + id;
+		return getSql(key, param);
+	}
 	/**
 	 *
 	 * @param c
 	 * @param id
 	 * @return
 	 */
-	public static String getSql(Class c, String id) throws IOException {
-		return getSql(c, id, (Object)null);
+	public static String getSql(Class c, String id) {
+		return getSql(c, id, null);
 	}
 }
