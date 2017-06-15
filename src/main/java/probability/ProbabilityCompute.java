@@ -5,7 +5,7 @@ import org.apache.commons.math3.distribution.BinomialDistribution;
 public class ProbabilityCompute {
 	public static void main(String[] args) {
 		double p = 0.035;
-		int k = 8;
+		int k = 10;
 //		int n = 300
 //		double result = computeProbablity(p, k, n);
 //		System.out.println(result);
@@ -48,7 +48,7 @@ public class ProbabilityCompute {
 				ltn -= size;
 				ltp = computeProbablity(p, k, ltn);
 			} else if (gtp> needp && ltp < needp) {
-				if (gtn == ltn)
+				if (gtn == ltn || gtn - ltn == 1)
 					break;
 				if (gtn - ltn <= 10) {
 					cn = ltn + 1;
@@ -73,7 +73,7 @@ public class ProbabilityCompute {
 				ltn = cn;
 			}
 		}
-		if (Math.abs(gtp - needp) > sq)
+		if (Math.abs(gtp - needp) < sq)
 			return gtn;
 		else
 			return ltn;
