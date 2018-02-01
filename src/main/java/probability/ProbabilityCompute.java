@@ -5,7 +5,7 @@ import org.apache.commons.math3.distribution.BinomialDistribution;
 public class ProbabilityCompute {
 	public static void main(String[] args) {
 		double p = 0.035;
-		int k = 10;
+		int k = 6;
 //		int n = 300
 //		double result = computeProbablity(p, k, n);
 //		System.out.println(result);

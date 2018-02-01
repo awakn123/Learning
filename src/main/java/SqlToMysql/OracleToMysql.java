@@ -1,6 +1,9 @@
 package SqlToMysql;
 
+import SqlToMysql.bean.OracleBean;
+import SqlToMysql.bean.SqlBlock;
 import SqlToMysql.bean.SqlFile;
+import SqlToMysql.split.CreateSqlSplit;
 import SqlToMysql.util.SqlUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,20 +36,20 @@ public class OracleToMysql {
 		SqlConfig.ShowTypeError = true;
 		SqlConfig.showParseError = true;
 		// 1~22
-		String rootPath = "./src/test/sqlWork/e8_oracle/split/1table,record,key.sql";
+		String rootPath = "./src/test/sqlWork/e8_oracle/sql201501280603.sql";
 		String writePath = "./src/test/sqlWork/e8_oracle/split";
 
 		List<SqlFile> files = SqlFile.readFile(rootPath);
 		SqlFile file = files.get(0);
 
-		int j =0;
-		int s = file.getContentList().size();
-		for (int i=0;i<s;i = i+50000) {
-			j++;
-			SqlUtils.writeFileStr(writePath, j+"table.sql", file.getContentList().subList(i, i+50000 > s ? s : i+50000));
-		}
-
-		System.out.println("end");
+        CreateSqlSplit split = new CreateSqlSplit();
+        List<SqlBlock> blocks = split.split(file);
+        List<OracleBean> beans = SqlUtils.blockToOracleBean(blocks);
+        List<String> mysqls = SqlUtils.listToMysql(beans);
+        for (String s : mysqls) {
+            System.out.println(s);
+        }
+        System.out.println("end");
 	}
 
 }

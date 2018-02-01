@@ -166,38 +166,49 @@ public class SqlUtils {
 
 
 	/**
-	 * 将Bean转为Mysql
+	 * 将Bean转为Mysql语法并写出到文件
 	 *
 	 * @param writePath
 	 * @param list
 	 * @throws IOException
 	 */
-	public static <T extends OracleBean> void listToMysql(String writePath, String name, List<T> list) throws IOException {
-		List<String> sqls = Lists.newArrayList();
-		for (T t : list) {
-			try {
-				if (t.getBlock() == null || t.getBlock().getSqlType() == null || !(t.getBlock().getSqlType() instanceof TypeService))
-					continue;
-				TypeService typeService = (TypeService) t.getBlock().getSqlType();
-				sqls.add(typeService.toMysqlSyntax(t));
-			} catch (Exception e) {
-				log.error(t, e);
-			}
-		}
-		// 输出Visitor中的统计
-		O2MVisitor.counter.output();
-		System.out.println(O2MVisitor.counter.size());
-		System.out.println(O2MVisitor.counter.output());
-		System.out.println("------------------------------------------------------------------------------");
-		System.out.println(O2MVisitor.okCounter.output());
-		System.out.println(MapListUtils.toOutput(O2MVisitor.errorMsgs));
+	public static <T extends OracleBean> void listToMysqlFile(String writePath, String name, List<T> list) throws IOException {
+        List<String> sqls = listToMysql(list);
 
 		// 写出到文件
 		SqlUtils.writeFileStr(writePath, name, sqls);
 	}
 
+    /**
+     * 将Bean转为Mysql语法的List
+     * @param list
+     * @param <T>
+     * @return
+     */
+    public static <T extends OracleBean> List<String> listToMysql(List<T> list) {
+        List<String> sqls = Lists.newArrayList();
+        for (T t : list) {
+            try {
+                if (t.getBlock() == null || t.getBlock().getSqlType() == null || !(t.getBlock().getSqlType() instanceof TypeService))
+                    continue;
+                TypeService typeService = (TypeService) t.getBlock().getSqlType();
+                sqls.add(typeService.toMysqlSyntax(t));
+            } catch (Exception e) {
+                log.error(t, e);
+            }
+        }
+        // 输出Visitor中的统计
+        O2MVisitor.counter.output();
+        System.out.println(O2MVisitor.counter.size());
+        System.out.println(O2MVisitor.counter.output());
+        System.out.println("------------------------------------------------------------------------------");
+        System.out.println(O2MVisitor.okCounter.output());
+        System.out.println(MapListUtils.toOutput(O2MVisitor.errorMsgs));
+        return sqls;
+    }
 
-	public static List<OracleBean> blockToOracleBean(List<SqlBlock> blocks) {
+
+    public static List<OracleBean> blockToOracleBean(List<SqlBlock> blocks) {
 		if (blocks == null || blocks.isEmpty()) return null;
 		List<OracleBean> beanList = Lists.newArrayList();
 		for (SqlBlock block: blocks) {

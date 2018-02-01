@@ -14,7 +14,7 @@ public class DruidMain {
 
 	public static DruidDataSource getMysqlDataSource() throws SQLException {
 		DruidDataSource dataSource = new DruidDataSource();
-		dataSource.setUrl("jdbc:mysql://192.168.7.44:3306/weaver_test?characterEncoding=utf8");
+		dataSource.setUrl("jdbc:mysql://192.168.7.44:3306/trans_record?characterEncoding=utf8");
 		dataSource.setUsername("root");
 		dataSource.setPassword("ecology");
 		dataSource.setInitialSize(1);
@@ -32,14 +32,38 @@ public class DruidMain {
 		dataSource.init();
 		return dataSource;
 	}
+    public static DruidDataSource getSqlServerDataSource() throws SQLException {
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setUrl("jdbc:sqlserver://127.0.0.1:1433;DatabaseName=e9");
+        dataSource.setUsername("sa");
+        dataSource.setPassword("123456");
+        dataSource.setInitialSize(1);
+        dataSource.setMinIdle(1);
+        dataSource.setMaxActive(20);
+        dataSource.setMaxWait(60000);
+        dataSource.setTimeBetweenEvictionRunsMillis(60000);
+        dataSource.setMinEvictableIdleTimeMillis(300000);
+        dataSource.setValidationQuery("select 'x'");
+        dataSource.setTestWhileIdle(true);
+        dataSource.setTestOnBorrow(false);
+        dataSource.setTestOnReturn(false);
+        dataSource.setPoolPreparedStatements(false);
+        dataSource.setFilters("stat");
+        dataSource.init();
+        return dataSource;
+    }
+
 	public static void main(String[] args) throws SQLException, IOException {
-		try (DruidDataSource dataSource = getMysqlDataSource()) {
+	    String s = ",,,";
+        String a = s.substring(0, 0);
+        System.out.println(s.substring(0,0));
+        /*try (DruidDataSource dataSource = getMysqlDataSource()) {
 			DruidPooledConnection conn = dataSource.getConnection();
 //			ResultSet rs = testCall(conn);
-			PreparedStatement ps = conn.prepareStatement("SELECT id FROM HtmlLabelIndex WHERE indexdesc = ?");
-			ps.setString(1, "主目录");
+			PreparedStatement ps = conn.prepareStatement("update Text_Test set text_col = ?");
+			ps.setString(1, null);
 			ps.execute();
-			ResultSet rs = ps.getResultSet();
+			*//*ResultSet rs = ps.getResultSet();
 			ResultSetMetaData m = rs.getMetaData();
 			System.out.println("--------------------column start----------------------------");
 			for (int i=1;i<=m.getColumnCount();i++) {
@@ -54,9 +78,9 @@ public class DruidMain {
 				System.out.println();
 				count++;
 			}
-			System.out.println(count);
+			System.out.println(count);*//*
 			System.out.println("----------------------------value end-----------------------------");
-		}
+		}*/
 	}
 
 	private static ResultSet testCall(DruidPooledConnection conn) throws SQLException {
