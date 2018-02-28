@@ -47,7 +47,7 @@ public class O2MVisitor extends OracleOutputVisitor {
 	public static CounterMap<String> counter = new CounterMap<String>();
 	public static CounterMap<String> okCounter = new CounterMap<String>();
 	public static Map<String, List<String>> errorMsgs = Maps.newHashMap();
-	private static Set<String> sameFunctionNames = Sets.newHashSet("getpinyin", "lower", "concat", "fn_split", "table");
+	private static Set<String> sameFunctionNames = Sets.newHashSet("getpinyin", "lower", "concat", "fn_split", "table", "upper", "ascii");
 	private static Set<String> procedureNames = Sets.newHashSet(
 			"sysmaintenancelog_proc", "workflow_requestbase_insertnew", "workflow_requestlog_insert_new", "workflow_requestlog_op", "workflow_requestlogcurdate_new",
 			"doc_diracl_checkpermissionex1");
@@ -1110,7 +1110,13 @@ public class O2MVisitor extends OracleOutputVisitor {
 		} else if (lowerMethodName.equals("length")) {
 			x.setMethodName("char_length");
 			return super.visit(x);
-		} else if (lowerMethodName.equals("ltrim") || lowerMethodName.equals("rtrim") || lowerMethodName.equals("trim")) {
+		} else if (lowerMethodName.equals("lengthb")) {
+            x.setMethodName("length");
+            return super.visit(x);
+        } else if (lowerMethodName.equals("chr")) {
+            x.setMethodName("char");
+            return super.visit(x);
+        } else if (lowerMethodName.equals("ltrim") || lowerMethodName.equals("rtrim") || lowerMethodName.equals("trim")) {
 			if (x.getAttributes().size() == 1) {
 				return super.visit(x);
 			}

@@ -36,7 +36,7 @@ public class OracleToMysql {
 		SqlConfig.ShowTypeError = true;
 		SqlConfig.showParseError = true;
 		// 1~22
-		String rootPath = "./src/test/sqlWork/e8_oracle/sql201501280603.sql";
+		String rootPath = "./src/test/sqlWork/sql201712220303(V1).sql";
 		String writePath = "./src/test/sqlWork/e8_oracle/split";
 
 		List<SqlFile> files = SqlFile.readFile(rootPath);
