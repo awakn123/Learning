@@ -14,9 +14,9 @@ public class DruidMain {
 
 	public static DruidDataSource getMysqlDataSource() throws SQLException {
 		DruidDataSource dataSource = new DruidDataSource();
-		dataSource.setUrl("jdbc:mysql://192.168.7.44:3306/trans_record?characterEncoding=utf8");
+		dataSource.setUrl("jdbc:mysql://192.168.7.44:3306/weaver_dev?characterEncoding=utf8");
 		dataSource.setUsername("root");
-		dataSource.setPassword("ecology");
+		dataSource.setPassword("ecology_root_%");
 		dataSource.setInitialSize(1);
 		dataSource.setMinIdle(1);
 		dataSource.setMaxActive(20);
@@ -25,8 +25,8 @@ public class DruidMain {
 		dataSource.setMinEvictableIdleTimeMillis(300000);
 		dataSource.setValidationQuery("select 'x'");
 		dataSource.setTestWhileIdle(true);
-		dataSource.setTestOnBorrow(false);
-		dataSource.setTestOnReturn(false);
+		dataSource.setTestOnBorrow(true);
+		dataSource.setTestOnReturn(true);
 		dataSource.setPoolPreparedStatements(false);
 		dataSource.setFilters("stat");
 		dataSource.init();
