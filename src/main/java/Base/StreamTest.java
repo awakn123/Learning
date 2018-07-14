@@ -19,9 +19,9 @@ public class StreamTest {
                 StringBuilder::append
         )));
         System.out.println("collect ?:"+ ids.stream().collect(Collector.of(
-                ()-> new StringBuilder(),
-                (builder, item)-> builder.append("?,"),
-                (builder, builder2)-> builder.append(builder2)
+                ()-> new StringBuilder(),// 初始化
+                (builder, item)-> builder.append("?,"),// 累加操作
+                (builder, builder2)-> builder.append(builder2)// 并行计算时的合并
         )) + "; wrong");
         System.out.println("join ?:" + ids.stream().map((item)-> "?").collect(Collectors.joining(",")));
     }
