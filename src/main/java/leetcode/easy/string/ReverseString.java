@@ -7,7 +7,13 @@ package leetcode.easy.string;
  */
 public class ReverseString {
 	public void reverseString(char[] s) {
-
+		if (s == null || s.length <=1) return;
+		int l = s.length >> 1;
+		for (int i=0;i<l;i++) {
+			char tmp = s[i];
+			s[i] = s[s.length - i - 1];
+			s[s.length - i - 1] = tmp;
+		}
 	}
 
 	public static void main(String[] args){
