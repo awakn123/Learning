@@ -28,4 +28,18 @@ public class ListNodeUtil {
 		}
 		return cur;
 	}
+
+	public static void connectToCycle(ListNode head, int idx) {
+		ListNode cycleNode = null, cur = head, tail = null;
+		while(cur != null) {
+			if (idx == 0) {
+				cycleNode = cur;
+			} else {
+				idx--;
+			}
+			tail = cur;
+			cur = cur.getNext();
+		}
+		tail.setNext(cycleNode);
+	}
 }
