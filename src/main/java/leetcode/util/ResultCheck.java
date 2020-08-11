@@ -1,5 +1,7 @@
 package leetcode.util;
 
+import leetcode.ListNode;
+
 /**
  * Created by 曹云 on 2020/8/10.
  */
@@ -30,6 +32,25 @@ public class ResultCheck {
 		if (result == answer || (result != null && result.equals(answer))) {
 			pass();
 		} else {
+			error(result, answer);
+		}
+	}
+
+	public static void check(ListNode result, ListNode answer) {
+		int idx = 0;
+		while(result != null && answer != null) {
+			if (result.getVal() != answer.getVal()) {
+				error(result, answer);
+				return;
+			}
+			result = result.getNext();
+			answer = result.getNext();
+			idx++;
+		}
+		if (result == answer) {
+			pass();
+		} else {
+			System.out.println("error idx:" + idx);
 			error(result, answer);
 		}
 	}
