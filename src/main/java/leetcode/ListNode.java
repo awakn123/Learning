@@ -6,6 +6,7 @@ public class ListNode {
 	int val;
 	ListNode next;
 
+	ListNode() {}
 	ListNode(int x) {
 		val = x;
 	}
@@ -16,6 +17,7 @@ public class ListNode {
 		if (xlist.length > 1)
 			next = new ListNode(Arrays.copyOfRange(xlist, 1, xlist.length));
 	}
+	ListNode(int val, ListNode next) { this.val = val; this.next = next; }
 
 	@Override
 	public String toString() {
