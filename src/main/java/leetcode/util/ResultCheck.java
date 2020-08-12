@@ -38,20 +38,21 @@ public class ResultCheck {
 
 	public static void check(ListNode result, ListNode answer) {
 		int idx = 0;
-		while(result != null && answer != null) {
-			if (result.getVal() != answer.getVal()) {
+		ListNode curResult = result, curAnswer = answer;
+		while(curResult != null && curAnswer != null) {
+			if (curResult.val != curAnswer.val) {
 				error(result, answer);
 				return;
 			}
-			result = result.getNext();
-			answer = result.getNext();
+			curResult = curResult.next;
+			curAnswer = curAnswer.next;
 			idx++;
 		}
-		if (result == answer) {
+		if (curResult == curAnswer) {
 			pass();
 		} else {
 			System.out.println("error idx:" + idx);
-			error(result, answer);
+			error(curResult, curAnswer);
 		}
 	}
 }

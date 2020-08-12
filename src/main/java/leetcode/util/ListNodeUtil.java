@@ -12,7 +12,7 @@ public class ListNodeUtil {
 		ListNode parent = root;
 		for (int i=1;i<vals.length;i++) {
 			ListNode node = new ListNode(vals[i]);
-			parent.setNext(node);
+			parent.next = node;
 			parent = node;
 		}
 		return root;
@@ -21,9 +21,9 @@ public class ListNodeUtil {
 	public static ListNode getListNodeByIdx(ListNode root, int idx) {
 		ListNode cur = root;
 		while (idx>0) {
-			if (cur.getNext() == null)
+			if (cur.next == null)
 				return cur;
-			cur = cur.getNext();
+			cur = cur.next;
 			idx--;
 		}
 		return cur;
@@ -38,8 +38,8 @@ public class ListNodeUtil {
 				idx--;
 			}
 			tail = cur;
-			cur = cur.getNext();
+			cur = cur.next;
 		}
-		tail.setNext(cycleNode);
+		tail.next = cycleNode;
 	}
 }
