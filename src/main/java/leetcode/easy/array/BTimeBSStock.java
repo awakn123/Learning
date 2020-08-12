@@ -1,4 +1,4 @@
-package leetcode.array;
+package leetcode.easy.array;
 
 /**
  * Created by 曹云 on 2020/8/1.

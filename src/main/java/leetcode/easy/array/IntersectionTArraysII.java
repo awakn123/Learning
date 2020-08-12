@@ -1,13 +1,11 @@
-package leetcode.array;
+package leetcode.easy.array;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by 曹云 on 2020/8/3.

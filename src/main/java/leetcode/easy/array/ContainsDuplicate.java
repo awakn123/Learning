@@ -1,6 +1,4 @@
-package leetcode.array;
-
-import com.google.common.collect.Sets;
+package leetcode.easy.array;
 
 import java.util.HashSet;
 import java.util.Set;

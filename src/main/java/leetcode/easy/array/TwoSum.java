@@ -1,6 +1,4 @@
-package leetcode.array;
-
-import com.google.common.collect.Maps;
+package leetcode.easy.array;
 
 import java.util.Arrays;
 import java.util.HashMap;
