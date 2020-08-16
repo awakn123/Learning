@@ -2,6 +2,7 @@ package leetcode.util;
 
 import leetcode.ListNode;
 import leetcode.easy.tree.MaxDepthBinaryTree;
+import leetcode.easy.tree.ValidBST;
 
 import java.util.Arrays;
 import java.util.List;
@@ -100,16 +101,16 @@ public class ResultCheck {
 
 	public static void checkAVL(TreeNode root) {
 		if (root == null) {
-			error(root, null);
 			return;
 		}
 		MaxDepthBinaryTree maxDepth = new MaxDepthBinaryTree();
 		int leftDepth = maxDepth.maxDepth(root.left);
 		int rightDepth = maxDepth.maxDepth(root.right);
-		if (Math.abs(leftDepth - rightDepth) <=1) {
-			pass();
-		} else {
+		if (Math.abs(leftDepth - rightDepth) >1) {
 			error(root, null);
+		} else {
+			checkAVL(root.left);
+			checkAVL(root.right);
 		}
 	}
 
@@ -130,5 +131,14 @@ public class ResultCheck {
 			}
 		}
 		pass();
+	}
+
+	public static void checkBST(TreeNode root) {
+		ValidBST validBST = new ValidBST();
+		if (!validBST.isValidBST(root)) {
+			error(root, null);
+		} else {
+			pass();
+		}
 	}
 }
