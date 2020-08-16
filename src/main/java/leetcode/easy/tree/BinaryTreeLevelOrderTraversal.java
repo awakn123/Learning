@@ -5,7 +5,10 @@ import leetcode.util.ResultCheck;
 import leetcode.util.TreeNode;
 import leetcode.util.TreeNodeUtil;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * Created by 曹云 on 2020/8/12.
@@ -14,7 +17,25 @@ import java.util.List;
  */
 public class BinaryTreeLevelOrderTraversal {
 	public List<List<Integer>> levelOrder(TreeNode root) {
-		return null;
+		List<List<Integer>> result = new ArrayList<>();
+		Queue<TreeNode> queue = new LinkedList<>();
+		queue.add(root);
+		while(!queue.isEmpty()) {
+			int size = queue.size();
+			List<Integer> level = new ArrayList<>();
+			while(size > 0) {
+				TreeNode node = queue.poll();
+				if (node != null) {
+					level.add(node.val);
+					queue.offer(node.left);
+					queue.offer(node.right);
+				}
+				size--;
+			}
+			if (!level.isEmpty())
+				result.add(level);
+		}
+		return result;
 	}
 
 	public static void main(String[] args){
