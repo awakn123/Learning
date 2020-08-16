@@ -13,8 +13,23 @@ public class FirstBadVersion {
 	boolean isBadVersion(int version) {
 		return version >= badVersion;
 	}
+
 	public int firstBadVersion(int n) {
-		return 0;
+		if (n == 0) return 0;
+		int left = 0, right = n;
+		while (right - left > 1) {
+//			int mid = (left + right) >> 1;
+//			if (mid < 0) {
+//				mid = (left >> 1) + (right >> 1) + ((left%2) + (right%2))/2;
+//			}
+			int mid = left + (right - left) / 2;
+			if (isBadVersion(mid)) {
+				right = mid;
+			} else {
+				left = mid;
+			}
+		}
+		return right;
 	}
 
 	public static void main(String[] args){
@@ -25,6 +40,10 @@ public class FirstBadVersion {
 
 		main.badVersion = 10;
 		result = main.firstBadVersion(27);
+		ResultCheck.check(result, main.badVersion);
+
+		main.badVersion = 1702766719;
+		result = main.firstBadVersion(2126753390);
 		ResultCheck.check(result, main.badVersion);
 	}
 }
