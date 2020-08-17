@@ -24,8 +24,8 @@ public class ShuffleArray {
 	public int[] shuffle() {
 		int[] result = Arrays.copyOf(nums, nums.length);
 		Random r = new Random();
-		for (int i=0; i<result.length; i++) {
-			int idx = Math.abs(r.nextInt()%nums.length);
+		for (int i=result.length - 1; i>=0; i--) {
+			int idx = (int)Math.floor(Math.random() * (i + 1));
 			int tmp = result[i];
 			result[i] = result[idx];
 			result[idx] = tmp;
