@@ -9,8 +9,14 @@ import leetcode.util.ResultCheck;
  */
 public class HouseRobber {
 	public int rob(int[] nums) {
-
-		return 0;
+		if (nums.length == 0) return 0;
+		int max = nums[0], lastMax = 0;
+		for (int i = 1;i<nums.length; i++) {
+			int tmpMax = lastMax + nums[i];
+			lastMax = max;
+			max = Math.max(max, tmpMax);
+		}
+		return max;
 	}
 
 	public static void main(String[] args){
