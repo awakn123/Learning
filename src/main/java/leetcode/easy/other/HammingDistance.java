@@ -10,7 +10,13 @@ import leetcode.util.ResultCheck;
 public class HammingDistance {
 
 	public int hammingDistance(int x, int y) {
-		return 0;
+//		return Integer.bitCount(x ^ y);
+		int z = x ^ y, result = 0;
+		while(z != 0) {
+			result++;
+			z &= z-1;
+		}
+		return result;
 	}
 
 	public static void main(String[] args){
