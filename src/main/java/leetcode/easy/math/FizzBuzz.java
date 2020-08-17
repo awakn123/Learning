@@ -3,6 +3,7 @@ package leetcode.easy.math;
 import com.google.common.collect.Lists;
 import leetcode.util.ResultCheck;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,7 +13,20 @@ import java.util.List;
  */
 public class FizzBuzz {
 	public List<String> fizzBuzz(int n) {
-		return null;
+		List<String> result = new ArrayList<>(n);
+		for (int i=1; i<=n; i++) {
+			int mod3 = i%3, mod5 = i%5;
+			if (mod3 == 0 && mod5 == 0) {
+				result.add("FizzBuzz");
+			} else if (mod3 == 0) {
+				result.add("Fizz");
+			} else if (mod5 == 0) {
+				result.add("Buzz");
+			} else {
+				result.add(String.valueOf(i));
+			}
+		}
+		return result;
 	}
 	public static void main(String[] args){
 		FizzBuzz main = new FizzBuzz();
