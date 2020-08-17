@@ -10,7 +10,31 @@ import leetcode.util.ResultCheck;
 public class ValidParentheses {
 
 	public boolean isValid(String s) {
-		return false;
+		char[] stack = new char[s.length()];
+		int stackIdx = 0;
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			switch(c) {
+				case '(':
+				case '{':
+				case '[':
+					stack[stackIdx++] = c;
+					break;
+				case ')':
+					if (--stackIdx < 0 || stack[stackIdx] != '(')
+						return false;
+					break;
+				case '}':
+					if (--stackIdx < 0 || stack[stackIdx] != '{')
+						return false;
+					break;
+				case ']':
+					if (--stackIdx < 0 || stack[stackIdx] != '[')
+						return false;
+					break;
+			}
+		}
+		return stackIdx == 0;
 	}
 
 	public static void main(String[] args){
@@ -20,5 +44,6 @@ public class ValidParentheses {
 		ResultCheck.check(main.isValid("(]"), false);
 		ResultCheck.check(main.isValid("([)]"), false);
 		ResultCheck.check(main.isValid("{[]}"), true);
+		ResultCheck.check(main.isValid("{"), false);
 	}
 }
