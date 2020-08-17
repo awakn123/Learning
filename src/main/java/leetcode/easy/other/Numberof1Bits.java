@@ -9,14 +9,40 @@ import leetcode.util.ResultCheck;
  */
 public class Numberof1Bits {
 	// you need to treat n as an unsigned value
-	public int hammingWeight(int n) {
-		return 0;
+	public int hammingWeight2(int n) {
+		String str = Integer.toBinaryString(n);
+		int result = 0;
+		for (int i=0; i<str.length(); i++) {
+			if (str.charAt(i) == '1')
+				result++;
+		}
+		return result;
 	}
+	public int hammingWeight3(int n) {
+		int result = 0, mask = 1;
+		for (int i=0;i<32;i++) {
+			if ((n&mask) != 0){
+				result++;
+			}
+			mask<<=1;
+		}
+		return result;
+	}
+
+	public int hammingWeight(int n) {
+		int result = 0;
+		while (n!=0) {
+			result++;
+			n = n&(n-1);
+		}
+		return result;
+	}
+
 
 	public static void main(String[] args){
 		Numberof1Bits main = new Numberof1Bits();
-		ResultCheck.check(main.hammingWeight(3), 3);
-		ResultCheck.check(main.hammingWeight(1), 1);
+		ResultCheck.check(main.hammingWeight(Integer.parseInt("00000000000000000000000000001011", 2)), 3);
+		ResultCheck.check(main.hammingWeight(Integer.parseInt("00000000000000000000000010000000", 2)), 1);
 		ResultCheck.check(main.hammingWeight(-3), 31);
 	}
 }
