@@ -1,6 +1,7 @@
 package leetcode.easy.devise;
 
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * Created by 曹云 on 2020/8/16.
@@ -8,19 +9,28 @@ import java.util.Arrays;
  * https://leetcode.com/problems/shuffle-an-array/
  */
 public class ShuffleArray {
+	int[] nums;
 
 	public ShuffleArray(int[] nums) {
-
+		this.nums = nums;
 	}
 
 	/** Resets the array to its original configuration and return it. */
 	public int[] reset() {
-		return null;
+		return nums;
 	}
 
 	/** Returns a random shuffling of the array. */
 	public int[] shuffle() {
-		return null;
+		int[] result = Arrays.copyOf(nums, nums.length);
+		Random r = new Random();
+		for (int i=0; i<result.length; i++) {
+			int idx = Math.abs(r.nextInt()%nums.length);
+			int tmp = result[i];
+			result[i] = result[idx];
+			result[idx] = tmp;
+		}
+		return result;
 	}
 
 	public static void main(String[] args){
@@ -32,7 +42,7 @@ public class ShuffleArray {
 		solution.shuffle();
 
 		// 重设数组到它的初始状态[1,2,3]。
-		solution.reset();
+		System.out.println(Arrays.toString(solution.reset()));
 
 		// 随机返回数组[1,2,3]打乱后的结果。
 		System.out.println(Arrays.toString(solution.shuffle()));
