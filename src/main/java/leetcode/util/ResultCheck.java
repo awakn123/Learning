@@ -17,8 +17,8 @@ public class ResultCheck {
 		System.out.printf("Wrong, result is %s, answer is %s.\n", String.valueOf(result), String.valueOf(answer));
 	}
 	private static void listError(Object result, Object answer, int... idxs) {
-		String idxstr = Arrays.stream(idxs).mapToObj(Integer::toString).collect(Collectors.joining(","));
-		System.out.printf("the error index is %s, the result idx is %s, the answer idx is %s.\n", idxstr, String.valueOf(result), String.valueOf(answer));
+		String idxstr = Arrays.stream(idxs).mapToObj(Integer::toString).collect(Collectors.joining("."));
+		System.out.printf("the error index is %s, the result[%s] is %s, the answer[%s] is %s.\n", idxstr, idxstr, String.valueOf(result), idxstr, String.valueOf(answer));
 	}
 	private static void pass() {
 		System.out.println("Check pass.");
