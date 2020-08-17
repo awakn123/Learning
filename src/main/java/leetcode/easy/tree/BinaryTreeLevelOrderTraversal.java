@@ -42,6 +42,6 @@ public class BinaryTreeLevelOrderTraversal {
 		BinaryTreeLevelOrderTraversal main = new BinaryTreeLevelOrderTraversal();
 		TreeNode rootI = TreeNodeUtil.createTreeNode(new Integer[]{3,9,20,null,null,15,7});
 		List<List<Integer>> answerI = Lists.newArrayList(Lists.newArrayList(3), Lists.newArrayList(9,20), Lists.newArrayList(15,7));
-		ResultCheck.check(main.levelOrder(rootI), answerI);
+		ResultCheck.checkTwoDimension(main.levelOrder(rootI), answerI);
 	}
 }

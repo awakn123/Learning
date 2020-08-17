@@ -4,6 +4,7 @@ import leetcode.ListNode;
 import leetcode.easy.tree.MaxDepthBinaryTree;
 import leetcode.easy.tree.ValidBST;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -66,7 +67,7 @@ public class ResultCheck {
 		}
 	}
 
-	public static void check(List<List<Integer>> result, List<List<Integer>> answer) {
+	public static void checkTwoDimension(List<List<Integer>> result, List<List<Integer>> answer) {
 		if (result == answer) {
 			pass();
 			return;
@@ -140,5 +141,29 @@ public class ResultCheck {
 		} else {
 			pass();
 		}
+	}
+
+	public static void checkListString(List<String> result, List<String> answer) {
+		if (result == answer) {
+			pass();
+			return;
+		}
+		if (result == null || answer == null) {
+			error(result, answer);
+			return;
+		}
+		if (result.size() != answer.size()) {
+			error(result.size(), answer.size());
+			return;
+		}
+		for (int i=0; i<result.size(); i++) {
+			if (result.get(i) != answer.get(i) &&
+					(result.get(i) != null && !result.get(i).equals(answer.get(i)))) {
+				error(result, answer);
+				listError(result.get(i), answer.get(i), i);
+				return;
+			}
+		}
+		pass();
 	}
 }
