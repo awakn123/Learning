@@ -9,7 +9,13 @@ import leetcode.util.ResultCheck;
  */
 public class MaximumSubarray {
 	public int maxSubArray(int[] nums) {
-		return 0;
+		if (nums.length == 0) return 0;
+		int maxNum = nums[0], maxNumWithNext = nums[0];
+		for (int i=1; i<nums.length; i++) {
+			maxNumWithNext = Math.max(maxNumWithNext + nums[i], nums[i]);
+			maxNum = Math.max(maxNum, maxNumWithNext);
+		}
+		return maxNum;
 	}
 
 	public static void main(String[] args){
