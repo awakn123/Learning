@@ -1,5 +1,6 @@
 package leetcode.util;
 
+import com.google.common.collect.Lists;
 import leetcode.ListNode;
 import leetcode.easy.tree.MaxDepthBinaryTree;
 import leetcode.easy.tree.ValidBST;
@@ -67,7 +68,7 @@ public class ResultCheck {
 		}
 	}
 
-	public static void checkTwoDimension(List<List<Integer>> result, List<List<Integer>> answer) {
+	public static <T extends Object> void checkTwoDimension(List<List<T>> result, List<List<T>> answer) {
 		if (result == answer) {
 			pass();
 			return;
@@ -91,7 +92,7 @@ public class ResultCheck {
 				return;
 			}
 			for (int j=0;j<result.get(i).size();j++) {
-				if (result.get(i).get(j) != answer.get(i).get(j)) {
+				if (!result.get(i).get(j).equals(answer.get(i).get(j))) {
 					listError(result.get(i).get(j), answer.get(i).get(j), i, j);
 					return;
 				}
@@ -165,5 +166,25 @@ public class ResultCheck {
 			}
 		}
 		pass();
+	}
+
+	public static void checkTwoDimension(int[][] result, int[][] answer) {
+		if (result == answer) {
+			pass();
+			return;
+		}
+		if (result == null || answer == null) {
+			error(result, answer);
+			return;
+		}
+		List<List<Integer>> resultL = Lists.newArrayList();
+		for (int i=0; i<result.length; i++) {
+			resultL.add(Lists.newArrayList(Arrays.stream(result[i]).boxed().toArray(Integer[]::new)));
+		}
+		List<List<Integer>> answerL = Lists.newArrayList();
+		for (int i=0; i<answer.length; i++) {
+			answerL.add(Lists.newArrayList(Arrays.stream(answer[i]).boxed().toArray(Integer[]::new)));
+		}
+		checkTwoDimension(resultL, answerL);
 	}
 }
