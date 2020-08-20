@@ -84,15 +84,18 @@ public class ResultCheck {
 
 		for (int i=0; i<result.size(); i++) {
 			if (result.get(i) == null || answer.get(i) == null) {
+				error(result, answer);
 				listError(result.get(i), answer.get(i), i);
 				return;
 			}
 			if (result.get(i).size() != answer.get(i).size()) {
+				error(result, answer);
 				listError(result.get(i).size(), answer.get(i).size(), i);
 				return;
 			}
 			for (int j=0;j<result.get(i).size();j++) {
 				if (!result.get(i).get(j).equals(answer.get(i).get(j))) {
+					error(result, answer);
 					listError(result.get(i).get(j), answer.get(i).get(j), i, j);
 					return;
 				}
