@@ -79,6 +79,7 @@ public class ResultCheck {
 		}
 		if (result.size() != answer.size()) {
 			error(result.size(), answer.size());
+			error(result, answer);
 			return;
 		}
 
