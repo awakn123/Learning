@@ -171,6 +171,28 @@ public class ResultCheck {
 		pass();
 	}
 
+	public static <T extends Object> void checkList(List<T> result, Set<T> answer) {
+		if (result == answer) {
+			pass();
+			return;
+		}
+		if (result == null || answer == null) {
+			error(result, answer);
+			return;
+		}
+		if (result.size() != answer.size()) {
+			error(result.size(), answer.size());
+			return;
+		}
+		for (int i=0; i<result.size(); i++) {
+			if (result.get(i) != null && answer.contains(result.get(i))) {
+				error(result, answer);
+				return;
+			}
+		}
+		pass();
+	}
+
 	public static void checkTwoDimension(int[][] result, int[][] answer) {
 		if (result == answer) {
 			pass();
