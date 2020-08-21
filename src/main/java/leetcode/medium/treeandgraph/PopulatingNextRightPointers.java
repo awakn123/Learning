@@ -12,4 +12,19 @@ public class PopulatingNextRightPointers {
 	public Node connect(Node root) {
 		return null;
 	}
+
+	public static void main(String[] args){
+		Node root = new Node(1);
+		root.left = new Node(2);
+		root.right = new Node(3);
+		PopulatingNextRightPointers main = new PopulatingNextRightPointers();
+		main.connect(root);
+		if (root.next != null) {
+			System.out.println("root.next is not null.");
+		} else if (root.left.next != root.right) {
+			System.out.println("left.next is not right.");
+		} else if (root.right.next != null) {
+			System.out.println("right.next is not null.");
+		}
+	}
 }

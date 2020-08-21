@@ -1,13 +1,12 @@
 package leetcode.util;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Queues;
 import leetcode.ListNode;
 import leetcode.easy.tree.MaxDepthBinaryTree;
 import leetcode.easy.tree.ValidBST;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -148,7 +147,7 @@ public class ResultCheck {
 		}
 	}
 
-	public static void checkListString(List<String> result, List<String> answer) {
+	public static <T extends Object> void checkList(List<T> result, List<T> answer) {
 		if (result == answer) {
 			pass();
 			return;
@@ -190,5 +189,39 @@ public class ResultCheck {
 			answerL.add(Lists.newArrayList(Arrays.stream(answer[i]).boxed().toArray(Integer[]::new)));
 		}
 		checkTwoDimension(resultL, answerL);
+	}
+
+	public static void check(TreeNode result, TreeNode answer) {
+		Queue<TreeNode> resultQueue = Queues.newArrayDeque();
+		resultQueue.offer(result);
+		Queue<TreeNode> answerQueue = Queues.newArrayDeque();
+		answerQueue.offer(answer);
+		int size = 1, idx = 0;
+		TreeNode errResult = null, errAnswer = null;
+		while(!resultQueue.isEmpty()) {
+			if (size == 0) {
+				idx++;
+				size = resultQueue.size();
+			}
+			TreeNode r = resultQueue.poll(), a = answerQueue.poll();
+			if (r == a || (r != null && a != null && r.val == a.val)) {
+				size--;
+				resultQueue.offer(r.left);
+				resultQueue.offer(r.right);
+				answerQueue.offer(a.left);
+				answerQueue.offer(a.right);
+			} else {
+				errResult = r;
+				errAnswer = a;
+				break;
+			}
+		}
+		if (errResult == errAnswer) {
+			pass();
+		} else {
+			System.out.printf("error idx: %d.\n", idx);
+			error(errResult, errAnswer);
+			error(result, answer);
+		}
 	}
 }
