@@ -1,5 +1,8 @@
 package leetcode.medium.backtrack;
 
+import com.google.common.collect.Lists;
+import leetcode.util.ResultCheck;
+
 import java.util.List;
 
 /**
@@ -11,5 +14,10 @@ public class LetterCombinationsPhoneNum {
 
 	public List<String> letterCombinations(String digits) {
 		return null;
+	}
+
+	public static void main(String[] args){
+		LetterCombinationsPhoneNum main = new LetterCombinationsPhoneNum();
+		ResultCheck.checkList(main.letterCombinations("23"), Lists.newArrayList("ad", "ae", "af", "bd", "be", "bf", "cd", "ce", "cf"));
 	}
 }

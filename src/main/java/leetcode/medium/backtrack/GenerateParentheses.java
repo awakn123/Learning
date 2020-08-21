@@ -1,5 +1,9 @@
 package leetcode.medium.backtrack;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import leetcode.util.ResultCheck;
+
 import java.util.List;
 
 /**
@@ -11,5 +15,16 @@ public class GenerateParentheses {
 
 	public List<String> generateParenthesis(int n) {
 		return null;
+	}
+
+	public static void main(String[] args){
+		GenerateParentheses main = new GenerateParentheses();
+		ResultCheck.checkList(main.generateParenthesis(3), Sets.newHashSet(
+				"((()))",
+				"(()())",
+				"(())()",
+				"()(())",
+				"()()()"
+		));
 	}
 }
