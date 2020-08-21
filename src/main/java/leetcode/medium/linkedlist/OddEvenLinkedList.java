@@ -11,7 +11,16 @@ import leetcode.util.ResultCheck;
  */
 public class OddEvenLinkedList {
 	public ListNode oddEvenList(ListNode head) {
-		return null;
+		if (head == null || head.next == null) return head;
+		ListNode odd = head, even = head.next, evenHead = even;
+		while (odd != null && odd.next != null) {
+			odd.next = odd.next.next;
+			odd = odd.next == null ? odd: odd.next;
+			even.next = even.next == null ? null : even.next.next;
+			even = even.next;
+		}
+		odd.next = evenHead;
+		return head;
 	}
 
 	public static void main(String[] args){
