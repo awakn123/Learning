@@ -228,10 +228,18 @@ public class ResultCheck {
 			TreeNode r = resultQueue.poll(), a = answerQueue.poll();
 			if (r == a || (r != null && a != null && r.val == a.val)) {
 				size--;
-				resultQueue.offer(r.left);
-				resultQueue.offer(r.right);
-				answerQueue.offer(a.left);
-				answerQueue.offer(a.right);
+				if (r.left != null) {
+					resultQueue.offer(r.left);
+				}
+				if (r.right != null) {
+					resultQueue.offer(r.right);
+				}
+				if (a.left != null) {
+					answerQueue.offer(a.left);
+				}
+				if (a.right != null) {
+					answerQueue.offer(a.right);
+				}
 			} else {
 				errResult = r;
 				errAnswer = a;
