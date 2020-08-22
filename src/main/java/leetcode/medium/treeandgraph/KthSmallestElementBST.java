@@ -11,14 +11,30 @@ import leetcode.util.TreeNodeUtil;
  */
 public class KthSmallestElementBST {
 
+	int i = 0;
+	int k = 1;
+	int r = 0;
 	public int kthSmallest(TreeNode root, int k) {
-		return 0;
+		this.k = k;
+		dfs(root);
+		return r;
+	}
+
+	private void dfs(TreeNode node) {
+		if (node == null) return;
+		if (i == k) return;
+		dfs(node.left);
+		i++;
+		if (i == k)
+			r = node.val;
+		dfs(node.right);
 	}
 
 	public static void main(String[] args){
 		KthSmallestElementBST main = new KthSmallestElementBST();
 		TreeNode rootI = TreeNodeUtil.createTreeNode(new Integer[]{3,1,4,null,2});
 		ResultCheck.check(main.kthSmallest(rootI, 1), 1);
+		main.i = 0;
 		TreeNode rootII = TreeNodeUtil.createTreeNode(new Integer[]{5,3,6,2,4,null,null,1});
 		ResultCheck.check(main.kthSmallest(rootII, 3), 3);
 	}
