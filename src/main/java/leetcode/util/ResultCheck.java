@@ -182,11 +182,13 @@ public class ResultCheck {
 		}
 		if (result.size() != answer.size()) {
 			error(result.size(), answer.size());
+			error(result, answer);
 			return;
 		}
 		for (int i=0; i<result.size(); i++) {
-			if (result.get(i) != null && answer.contains(result.get(i))) {
+			if (result.get(i) != null && !answer.contains(result.get(i))) {
 				error(result, answer);
+				listError(result.get(i), null, i);
 				return;
 			}
 		}
