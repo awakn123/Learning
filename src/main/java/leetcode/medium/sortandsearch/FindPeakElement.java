@@ -16,18 +16,35 @@ public class FindPeakElement {
 		}
 		return nums.length - 1;
 	}
-	public int findPeakElement(int[] nums) {
-		return findPeakElement(nums, 0, nums.length - 1);
+	public int findPeakElement2(int[] nums) {
+		return findPeakElement2(nums, 0, nums.length - 1);
 	}
-	public int findPeakElement(int[] nums, int left, int right) {
+	public int findPeakElement2(int[] nums, int left, int right) {
 		int len = right - left + 1;
 		int mid = (len >> 1) + left;
 		if (mid + 1 >= nums.length || nums[mid] > nums[mid + 1]) {
 			if (mid - 1 < 0 || nums[mid] > nums[mid - 1])
 				return mid;
-			return findPeakElement(nums, left, mid - 1);
+			return findPeakElement2(nums, left, mid - 1);
 		}
-		return findPeakElement(nums, mid + 1, right);
+		return findPeakElement2(nums, mid + 1, right);
+	}
+
+	public int findPeakElement(int[] nums) {
+		return findPeakElement(nums, 0, nums.length);
+	}
+
+	private int findPeakElement(int[] nums, int left, int right) {
+		int mid = left + (right - left)/2;
+		boolean midBigL = mid == 0 || nums[mid] > nums[mid - 1];
+		boolean midBigR = mid == nums.length -1 || nums[mid] > nums[mid + 1];
+		if (midBigL && midBigR) {
+			return mid;
+		} else if (midBigL) {
+			return findPeakElement(nums, mid + 1, right);
+		} else {
+			return findPeakElement(nums, left, mid);
+		}
 	}
 
 	public static void main(String[] args){
