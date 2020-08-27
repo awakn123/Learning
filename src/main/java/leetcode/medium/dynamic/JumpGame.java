@@ -9,6 +9,13 @@ import leetcode.util.ResultCheck;
  */
 public class JumpGame {
 	public boolean canJump(int[] nums) {
+		if (nums.length == 0) return true;
+		int jumpEndPos = 0;
+		for (int i = jumpEndPos; i<=jumpEndPos; i++) {
+			jumpEndPos = Math.max(jumpEndPos, i+nums[i]);
+			if (jumpEndPos >= nums.length - 1)
+				return true;
+		}
 		return false;
 	}
 	public static void main(String[] args){
