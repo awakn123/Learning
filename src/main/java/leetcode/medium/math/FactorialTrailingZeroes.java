@@ -9,11 +9,17 @@ import leetcode.util.ResultCheck;
  */
 public class FactorialTrailingZeroes {
 	public int trailingZeroes(int n) {
-		return 0;
+		int num = 0;
+		while (n > 4) {
+			n /= 5;
+			num += n;
+		}
+		return num;
 	}
 	public static void main(String[] args){
 		FactorialTrailingZeroes main = new FactorialTrailingZeroes();
 		ResultCheck.check(main.trailingZeroes(3), 0);
 		ResultCheck.check(main.trailingZeroes(5), 1);
+		ResultCheck.check(main.trailingZeroes(30), 7);
 	}
 }
