@@ -9,7 +9,13 @@ import leetcode.util.ResultCheck;
  */
 public class ExcelSheetColumnNumber {
 	public int titleToNumber(String s) {
-		return 0;
+		int num = 0;
+		for (int i=0; i<s.length(); i++) {
+			char c = s.charAt(i);
+			num *= 26;
+			num += (c - 'A' + 1);
+		}
+		return num;
 	}
 
 	public static void main(String[] args){
