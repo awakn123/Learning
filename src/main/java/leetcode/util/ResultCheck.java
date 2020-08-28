@@ -256,4 +256,12 @@ public class ResultCheck {
 			error(result, answer);
 		}
 	}
+
+	public static void check(double result, double answer) {
+		if (result == answer) {
+			pass();
+		} else {
+			error(result, answer);
+		}
+	}
 }
