@@ -8,13 +8,39 @@ import leetcode.util.ResultCheck;
  * https://leetcode-cn.com/problems/sqrtx/solution/
  */
 public class Sqrtx {
-	public int mySqrt(int x) {
-		return 0;
+	public int mySqrt1(int x) {
+		int left = 1, right = x;
+		while (left < right) {
+			int mid = (right - left)/2 + left;
+			long midSquare = (long) mid * mid;
+			if (x < midSquare) {
+				right = mid;
+			} else if (x > midSquare) {
+				left = mid + 1;
+			} else {
+				left = right = mid;
+			}
+		}
+		if ((long)left * left > x) {
+			return left - 1;
+		} else {
+			return left;
+		}
 	}
 
+	public int mySqrt(int x) {
+		int r = (int)Math.exp(0.5 * Math.log(x));
+		if ((long)(r + 1) * (r + 1) <= x) {
+			r++;
+		}
+		return r;
+	}
 	public static void main(String[] args){
 		Sqrtx main = new Sqrtx();
 		ResultCheck.check(main.mySqrt(4), 2);
 		ResultCheck.check(main.mySqrt(8), 2);
+		ResultCheck.check(main.mySqrt(2147395599), 46339);
+		ResultCheck.check(main.mySqrt(2147483647), 46340);
+		ResultCheck.check(main.mySqrt(2147395600), 46340);
 	}
 }
