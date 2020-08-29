@@ -10,7 +10,12 @@ import leetcode.util.ResultCheck;
 public class SumOfTwoIntegers {
 
 	public int getSum(int a, int b) {
-		return 0;
+		while (b != 0) {
+			int tmp = a ^ b;
+			b = (a & b) << 1;
+			a = tmp;
+		}
+		return a;
 	}
 
 	public static void main(String[] args){
