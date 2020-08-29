@@ -28,12 +28,26 @@ public class Sqrtx {
 		}
 	}
 
-	public int mySqrt(int x) {
+	public int mySqrt2(int x) {
 		int r = (int)Math.exp(0.5 * Math.log(x));
 		if ((long)(r + 1) * (r + 1) <= x) {
 			r++;
 		}
 		return r;
+	}
+
+	public int mySqrt(int x) {
+		if (x == 0) return 0;
+		double C = x, x0 = x;
+		while (true) {
+			double xi = 0.5 * (x0 + C/x0);
+			if (x0-xi<1e-7) {
+				x0 = xi;
+				break;
+			}
+			x0 = xi;
+		}
+		return (int)x0;
 	}
 	public static void main(String[] args){
 		Sqrtx main = new Sqrtx();
