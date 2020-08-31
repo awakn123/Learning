@@ -2,6 +2,10 @@ package leetcode.hard.arrayandstring;
 
 import leetcode.util.ResultCheck;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by 曹云 on 2020/8/30.
  * 454. 四数相加 II
@@ -9,7 +13,15 @@ import leetcode.util.ResultCheck;
  */
 public class FourSumII {
 	public int fourSumCount(int[] A, int[] B, int[] C, int[] D) {
-		return 0;
+		int count = 0;
+		Map<Integer, Integer> sumNum = new HashMap<>();
+		for (int a: A)
+			for (int b: B)
+				sumNum.put(a+b, sumNum.getOrDefault(a+b, 0) + 1);
+		for (int c: C)
+			for (int d: D)
+				count += sumNum.getOrDefault(-c-d, 0);
+		return count;
 	}
 	public static void main(String[] args){
 		FourSumII main = new FourSumII();
