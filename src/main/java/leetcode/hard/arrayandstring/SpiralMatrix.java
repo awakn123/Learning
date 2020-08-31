@@ -3,6 +3,7 @@ package leetcode.hard.arrayandstring;
 import com.google.common.collect.Lists;
 import leetcode.util.ResultCheck;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,8 +14,33 @@ import java.util.List;
 public class SpiralMatrix {
 
 	public List<Integer> spiralOrder(int[][] matrix) {
+		if (matrix.length == 0) return new ArrayList<>();
+		int m = matrix.length, n = matrix[0].length;
+		List<Integer> list = new ArrayList<>(m * n);
+		int colT = 0, colB = m - 1;
+		int rowL = 0, rowR = n - 1;
+		while(rowL < rowR && colT < colB) {
+			for (int i = rowL; i < rowR; i++)
+				list.add(matrix[colT][i]);
+			for (int i = colT; i < colB; i++)
+				list.add(matrix[i][rowR]);
+			for (int i = rowR; i > rowL; i--)
+				list.add(matrix[colB][i]);
+			for (int i = colB; i > colT; i--)
+				list.add(matrix[i][rowL]);
+			rowL++; rowR--; colT++; colB--;
+		}
+		if (rowL == rowR && colT == colB) {
+			list.add(matrix[colT][rowL]);
+		} else if (rowL == rowR) {
+			for (int i = colT; i <= colB; i++)
+				list.add(matrix[i][rowR]);
+		} else if (colT == colB) {
+			for (int i = rowL; i <= rowR; i++)
+				list.add(matrix[colT][i]);
+		}
 
-		return null;
+		return list;
 	}
 	public static void main(String[] args){
 		SpiralMatrix main = new SpiralMatrix();
@@ -32,5 +58,10 @@ public class SpiralMatrix {
 		};
 		List<Integer> answerII = Lists.newArrayList(1,2,3,4,8,12,11,10,9,5,6,7);
 		ResultCheck.checkList(main.spiralOrder(matrixII), answerII);
+		int[][] matrixIII = new int[][]{
+				{6,9,7},
+		};
+		List<Integer> answerIII = Lists.newArrayList(6,9,7);
+		ResultCheck.checkList(main.spiralOrder(matrixIII), answerIII);
 	}
 }

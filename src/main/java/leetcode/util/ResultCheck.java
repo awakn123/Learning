@@ -157,6 +157,7 @@ public class ResultCheck {
 			return;
 		}
 		if (result.size() != answer.size()) {
+			System.out.println("error size.");
 			error(result.size(), answer.size());
 			return;
 		}
