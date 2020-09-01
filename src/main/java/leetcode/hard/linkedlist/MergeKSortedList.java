@@ -11,7 +11,33 @@ import leetcode.util.ResultCheck;
  */
 public class MergeKSortedList {
 	public ListNode mergeKLists(ListNode[] lists) {
-		return null;
+		if (lists.length == 0) return null;
+		return mergeKLists(lists, 0, lists.length - 1);
+	}
+
+	private ListNode mergeKLists(ListNode[] lists, int left, int right) {
+		if (left == right)
+			return lists[left];
+		int mid = (left + right)/2;
+		ListNode leftNode = this.mergeKLists(lists, left, mid);
+		ListNode rightNode = this.mergeKLists(lists, mid + 1, right);
+		ListNode dummy = new ListNode(), node = dummy;
+		while(leftNode != null && rightNode != null) {
+			if (leftNode.val < rightNode.val) {
+				node.next = leftNode;
+				leftNode = leftNode.next;
+				node = node.next;
+			} else {
+				node.next = rightNode;
+				rightNode = rightNode.next;
+				node = node.next;
+			}
+		}
+		if(leftNode != null)
+			node.next = leftNode;
+		if(rightNode != null)
+			node.next = rightNode;
+		return dummy.next;
 	}
 
 	public static void main(String[] args){
