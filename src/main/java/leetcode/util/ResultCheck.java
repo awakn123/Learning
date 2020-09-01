@@ -130,7 +130,7 @@ public class ResultCheck {
 		}
 		for (int i=0; i<result.length; i++) {
 			if (result[i] != answer[i]) {
-				error(result, answer);
+				error(Arrays.toString(result), Arrays.toString(answer));
 				listError(result[i], answer[i], i);
 				return;
 			}
