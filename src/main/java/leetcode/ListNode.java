@@ -21,7 +21,22 @@ public class ListNode {
 
 	@Override
 	public String toString() {
-		String nextStr = next == null ? "" : ("," + next.toString());
-		return val + nextStr;
+		String str = String.valueOf(val);
+		ListNode fast = this.next;
+		ListNode slow = this;
+		while (fast != null && fast.next != null && fast != slow) {
+			fast = fast.next.next;
+			slow = slow.next;
+			str += "," + slow.val;
+		}
+		if (fast == slow) {
+			str += ", circle...";
+		} else {
+			while(slow.next != null) {
+				slow = slow.next;
+				str += "," + slow.val;
+			}
+		}
+		return str;
 	}
 }
