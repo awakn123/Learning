@@ -9,9 +9,24 @@ import leetcode.util.TreeNodeUtil;
  * https://leetcode-cn.com/problems/lowest-common-ancestor-of-a-binary-tree/solution/
  */
 public class LowestCommonAncestor {
+	TreeNode ans = null;
 	public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
-		return null;
+		this.ans = null;
+		dfs(root, p, q);
+		return this.ans;
 	}
+
+	private boolean dfs(TreeNode root, TreeNode p, TreeNode q) {
+		if (ans != null || root == null)
+			return false;
+		boolean l = dfs(root.left, p, q);
+		boolean r = dfs(root.right, p, q);
+		if ((l&&r) || ((root == p || root == q) && (l || r))) {
+			this.ans = root;
+		}
+		return l || r || root == p || root == q;
+	}
+
 
 	public static void main(String[] args){
 		LowestCommonAncestor main = new LowestCommonAncestor();
