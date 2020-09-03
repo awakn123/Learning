@@ -1,5 +1,8 @@
 package leetcode.hard.treeandgraph;
 
+import com.google.common.collect.Lists;
+import leetcode.util.ResultCheck;
+
 import java.util.List;
 
 /**
@@ -10,5 +13,11 @@ import java.util.List;
 public class WordLadder {
 	public int ladderLength(String beginWord, String endWord, List<String> wordList) {
 		return 0;
+	}
+
+	public static void main(String[] args){
+		WordLadder main = new WordLadder();
+		ResultCheck.check(main.ladderLength("hit", "cog", Lists.newArrayList("hot", "dot", "dog", "lot", "log", "cog")), 5);
+		ResultCheck.check(main.ladderLength("hit", "cog", Lists.newArrayList("hot", "dot", "dog", "lot", "log")), 0);
 	}
 }
