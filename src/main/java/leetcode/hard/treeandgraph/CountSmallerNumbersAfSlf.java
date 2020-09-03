@@ -1,5 +1,8 @@
 package leetcode.hard.treeandgraph;
 
+import com.google.common.collect.Lists;
+import leetcode.util.ResultCheck;
+
 import java.util.List;
 
 /**
@@ -10,5 +13,10 @@ import java.util.List;
 public class CountSmallerNumbersAfSlf {
 	public List<Integer> countSmaller(int[] nums) {
 		return null;
+	}
+
+	public static void main(String[] args){
+		CountSmallerNumbersAfSlf main = new CountSmallerNumbersAfSlf();
+		ResultCheck.checkList(main.countSmaller(new int[]{5,2,6,1}), Lists.newArrayList(2,1,1,0));
 	}
 }
