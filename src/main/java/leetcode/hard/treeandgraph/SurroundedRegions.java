@@ -1,7 +1,5 @@
 package leetcode.hard.treeandgraph;
 
-import leetcode.util.ResultCheck;
-
 import java.util.Arrays;
 
 /**
@@ -11,7 +9,35 @@ import java.util.Arrays;
  */
 public class SurroundedRegions {
 	public void solve(char[][] board) {
+		for (int i=0; i<board.length; i++) {
+			for (int j=0; j<board[i].length; j++) {
+				if (i == 0 || j == 0 || i == board.length - 1 || j == board[i].length - 1) {
+					if (board[i][j] == 'O')
+						dfs(board,i, j);
+				}
+			}
+		}
 
+		for (int i=0; i<board.length; i++) {
+			for (int j=0; j<board[i].length; j++) {
+				if (board[i][j] == 'P')
+					board[i][j] = 'O';
+				else
+					board[i][j] = 'X';
+			}
+		}
+	}
+
+	private void dfs(char[][] board, int i, int j) {
+		if (i < 0 || j < 0 || i > board.length - 1 || j > board[i].length - 1)
+			return;
+		if (board[i][j] != 'O')
+			return;
+		board[i][j] = 'P';
+		dfs(board, i-1, j);
+		dfs(board, i+1, j);
+		dfs(board, i, j-1);
+		dfs(board, i, j+1);
 	}
 
 	public static void main(String[] args){
@@ -34,6 +60,25 @@ public class SurroundedRegions {
 			System.out.println(Arrays.toString(arr));
 		System.out.println("-------answer:-------");
 		for(char[] arr: answer)
+			System.out.println(Arrays.toString(arr));
+		char[][] boardII = new char[][]{
+				"XOXOXO".toCharArray(),
+				"OXOXOX".toCharArray(),
+				"XOXOXO".toCharArray(),
+				"OXOXOX".toCharArray(),
+		};
+		char[][] answerII = new char[][]{
+				"XOXOXO".toCharArray(),
+				"OXXXXX".toCharArray(),
+				"XXXXXO".toCharArray(),
+				"OXOXOX".toCharArray(),
+		};
+		main.solve(boardII);
+		System.out.println("-------board:-------");
+		for(char[] arr: boardII)
+			System.out.println(Arrays.toString(arr));
+		System.out.println("-------answer:-------");
+		for(char[] arr: answerII)
 			System.out.println(Arrays.toString(arr));
 	}
 }
