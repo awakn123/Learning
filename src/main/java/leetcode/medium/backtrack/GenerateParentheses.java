@@ -1,13 +1,10 @@
 package leetcode.medium.backtrack;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import leetcode.util.ResultCheck;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by 曹云 on 2020/8/21.
