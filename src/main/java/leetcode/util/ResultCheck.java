@@ -159,6 +159,7 @@ public class ResultCheck {
 		if (result.size() != answer.size()) {
 			System.out.println("error size.");
 			error(result.size(), answer.size());
+			error(result, answer);
 			return;
 		}
 		for (int i=0; i<result.size(); i++) {
