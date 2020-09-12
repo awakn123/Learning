@@ -3,6 +3,8 @@ package leetcode.hard.sordandsearch;
 import leetcode.util.ResultCheck;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 /**
  * Created by 曹云 on 2020/9/9.
@@ -11,6 +13,26 @@ import java.util.Arrays;
  */
 public class KthSmallestEle {
 	public int kthSmallest(int[][] matrix, int k) {
+		PriorityQueue<int[]> pq = new PriorityQueue<int[]>(new Comparator<int[]>() {
+			@Override
+			public int compare(int[] o1, int[] o2) {
+				return o1[0] - o2[0];
+			}
+		});
+		int n = matrix.length;
+		for (int i = 0; i < n; i++) {
+			pq.offer(new int[]{matrix[i][0], i, 0});
+		}
+
+		for (int i = 0; i < k - 1; i++) {
+			int[] cur = pq.poll();
+			if (cur[2] != n - 1) {
+				pq.offer(new int[]{matrix[cur[1]][cur[2] + 1], cur[1], cur[2] + 1});
+			}
+		}
+		return pq.poll()[0];
+	}
+	public int kthSmallest1(int[][] matrix, int k) {
 		int n = matrix.length;
 		int[] res = new int[n * n], tmp = new int[n * n];
 		merge(matrix, res, tmp, 0, n - 1);
