@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Display</title>
+</head>
+<style type="text/css">
+    html {
+        height: 100%;
+    }
+    body {
+        height: 100%;
+    }
+    .listitem {
+        display: list-item;
+        list-style-position: inside;
+    }
+    .marker{
+        display: list-item;
+        list-style-position: inside;
+    }
+    .marker::marker {
+        color: blue;
+        font-size: 1.2em;
+        content:'1'
+    }
+
+    .block {
+        display: block;
+    }
+</style>
+<body>
+<div class="listitem">
+    测试一下listitem的效果。
+</div>
+<div class="marker">
+    测试一下marker的效果。
+</div>
+<div class="block">
+    这是一个block
+</div>
+</body>
+</html>
