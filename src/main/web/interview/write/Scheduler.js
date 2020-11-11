@@ -1,16 +1,17 @@
 function Scheduler(num) {
 	this.list = [];
 	this.count = 0;
-	this.add = async function(fn) {
-		(this.count >= num) && await new Promise((resolve) => this.list.push(resolve));
-		this.count++;
-		let result = await fn();
-		this.count--;
-		if (this.list.length > 0) {
-			this.list.shift()();
-		}
-		return result;
+
+}
+Scheduler.prototype.add = async function(fn) {
+	(this.count >= num) && await new Promise((resolve) => this.list.push(resolve));
+	this.count++;
+	let result = await fn();
+	this.count--;
+	if (this.list.length > 0) {
+		this.list.shift()();
 	}
+	return result;
 }
 
 function delay (key, time) {

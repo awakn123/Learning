@@ -17,3 +17,15 @@ function sum() {
 
 
 //实现 taskSum(1000,()=>{console.log(1)}).task(1200,()=>{console.log(2)}).task(1300,()=>{console.log(3)})， 这里等待 1s，打印 1，之后等待 1.2s，打印 2，之后打印 1.3s，打印 3
+function taskSum(time, fn){
+	function Run() {
+
+	}
+	Run.prototype.task = function(time, fn) {
+		let curTime = new Date();
+		while (new Date() - curTime < time){};
+		fn();
+		return this;
+	}
+	return new Run().task(time, fn);
+}
