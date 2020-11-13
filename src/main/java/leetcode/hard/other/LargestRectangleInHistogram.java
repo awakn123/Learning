@@ -8,6 +8,7 @@ import java.util.Stack;
  * Created by 曹云 on 2020/11/12.
  * 84. 柱状图中最大的矩形
  * https://leetcode-cn.com/problems/largest-rectangle-in-histogram/solution/
+ * 单调栈
  */
 public class LargestRectangleInHistogram {
 	public int largestRectangleArea(int[] heights) {
