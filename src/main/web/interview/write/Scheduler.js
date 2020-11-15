@@ -1,10 +1,11 @@
 function Scheduler(num) {
 	this.list = [];
 	this.count = 0;
+	this.num = num;
 
 }
 Scheduler.prototype.add = async function(fn) {
-	(this.count >= num) && await new Promise((resolve) => this.list.push(resolve));
+	(this.count >= this.num) && await new Promise((resolve) => this.list.push(resolve));
 	this.count++;
 	let result = await fn();
 	this.count--;
