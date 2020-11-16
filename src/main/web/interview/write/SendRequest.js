@@ -74,3 +74,19 @@ Scheduler.prototype.run = function(arr) {
 
 let scheduler = new Scheduler(2);
 scheduler.run(urls);
+
+// 并行限制2
+async function scheduler2Run(arr){
+	let k = 2,cnt = 0, resolveArr = [];
+	while(arr.length > 0) {
+		if (cnt == k) {
+			await new Promise(resolve => resolveArr.push(resolve));
+		}
+		cnt++;
+		arr.shift()().then(function(){
+			cnt--;
+			resolveArr.length > 0 && resolveArr.shift()();
+		});
+	}
+}
+scheduler2Run(urls);

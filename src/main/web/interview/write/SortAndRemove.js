@@ -24,6 +24,11 @@ users.sort(function(a, b){
 	return a.name.localeCompare(b.name);
 });
 
-let map = new Map();
-users.forEach((user) => map.has(user.id) || map.set(user.id, user));
-console.log(map);
+let set = new Set();
+let newUsers = users.filter((user) => {
+	if (set.has(user.id))
+		return false;
+	set.add(user.id);
+	return true;
+});
+console.log(newUsers);
