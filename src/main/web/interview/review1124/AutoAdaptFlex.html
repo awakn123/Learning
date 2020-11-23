@@ -24,8 +24,8 @@
     }
     .bottom {
         background: purple;
-        flex-grow: 1;
-        overflow: hidden;
+        flex-grow: 1;/*assign the other space to bottom, when there is not enough content to support it.*/
+        overflow: hidden;/*the flow is over in there, avoid the parent scroll.*/
     }
     .scroll {
         height:100%;
