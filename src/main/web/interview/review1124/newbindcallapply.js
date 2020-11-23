@@ -20,7 +20,7 @@ function _new(func, ...args) {
 // call会将第一个参数作为this,后面的参数作为执行参数。
 // 执行时，会将其先绑定到context上，执行完毕后删除。
 // TODO 如果传入的是function，实际的context会返回什么呢，要查试一下
-function _call(context, ...args) {
+Function.prototype._call = function _call(context, ...args) {
 	let key = new Symbol(1);
 	if (context == null || (typeof(context) != 'object' && typeof(context) != 'function'))
 		context = window;
@@ -31,7 +31,7 @@ function _call(context, ...args) {
 }
 // apply:
 // 与call基本一致, 只是参数调整一下。
-function _apply(context, args = []) {
+Function.prototype._apply = function _apply(context, args = []) {
 	let key = new Symbol(1);
 	if (context == null || (typeof(context) != 'object' && typeof(context) != 'function'))
 		context = window;
@@ -43,7 +43,7 @@ function _apply(context, args = []) {
 // bind:
 // bind会返回一个方法，该方法执行时按this逻辑。
 // 另外，方法如果new 时，对象要以原函数的原型链为主。
-function _bind(context, ...args) {
+Function.prototype._bind = function _bind(context, ...args) {
 	let func = this;
 	let fNOP = function(){};
 	let bindFunc = function (...sndargs) {
@@ -52,5 +52,6 @@ function _bind(context, ...args) {
 	}
 	fNOP.prototype = this.prototype;
 	bindFunc.prototype = new fNOP();
+	//bindFunc.constructor = func; 不需要调整构造函数,应该是call时就赋上值了。
 	return bindFunc;
 }
