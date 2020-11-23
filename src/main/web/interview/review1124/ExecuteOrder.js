@@ -27,6 +27,7 @@ console.log("main frame");
 // 2. promise中的resolve以microtask运行，它的优先级比macrotask要高。
 // mdn的解释是microtask 会在创建它的方法或程序退出且javascript执行stack为空时执行，但比event loop执行消息队列要早。
 // 这个microtask后面还可以继续读。https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide
+// 我们可以使用 queueMicrotask(function)来自主添加Microtask，另外，MutationObserver API也使用microtask.
 
 // requestAnimationFrame，在有进程卡住的时候，会先执行呢，还是会后执行呢，还是会放弃执行呢？
 let count = 0, rafStartTime = new Date();
