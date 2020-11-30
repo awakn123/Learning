@@ -53,5 +53,6 @@ Function.prototype._bind = function _bind(context, ...args) {
 	fNOP.prototype = this.prototype;
 	bindFunc.prototype = new fNOP();
 	//bindFunc.constructor = func; 不需要调整构造函数,应该是call时就赋上值了。
+	// 另外这个prototype应该也可以使用new 的方式，就是Object.create(this.prototype)，不写什么fNOP了。
 	return bindFunc;
 }
