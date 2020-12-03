@@ -3,7 +3,6 @@ package PdfBox;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
-import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObjectImage;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +16,7 @@ public class Main {
             File pdfFile = new File("./src/test/resource/pdf.pdf");
             String filePath = "./src/test/resource/";
             document = PDDocument.load(pdfFile);
-            java.util.List pages = document.getDocumentCatalog().getAllPages();
+            /*java.util.List pages = document.getDocumentCatalog().getAllPages();
 
             System.out.print("getAllPages==============="+pages.size());
             Iterator iter = pages.iterator();
@@ -39,7 +38,7 @@ public class Main {
 
                     }
                 }
-            }
+            }*/
         } finally {
             if (document != null) {
                 document.close();
