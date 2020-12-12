@@ -1,7 +1,5 @@
 package leetcode.medium.math;
 
-import design.FizzBuzzInterface;
-import leetcode.medium.math.FactorialTrailingZeroes;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

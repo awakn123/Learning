@@ -52,7 +52,7 @@ public class WiggleSortII {
 			nums[nums.length - 1] = copyNums[0];
 	}
 
-	public void wiggleSort(int[] nums) {
+	public void wiggleSort3(int[] nums) {
 		int mid = nums.length >> 1;
 		int midNum = getSortedNum(nums, mid, 0, nums.length - 1);
 		// 3 partition.
@@ -80,6 +80,26 @@ public class WiggleSortII {
 
 	}
 
+	/**
+	 * 写了一个比较好理解的虚地址。
+	 * @param nums
+	 */
+	public void wiggleSort(int[] nums) {
+		int mid = nums.length >> 1;
+		int midNum = getSortedNum(nums, mid, 0, nums.length - 1);
+		int s = nums.length%2 == 0 ? (nums.length - 2) : (nums.length - 1) , b = 1;
+		for (int i=0; i<=nums.length - 1; i++) {
+			if (nums[i] < midNum && (i<s || i%2 == 1)) {
+				swap(nums, i, s);
+				s-=2;
+				i--;
+			} else if (nums[i] > midNum && (i>b || i%2==0)) {
+				swap(nums, i, b);
+				b+=2;
+				i--;
+			}
+		}
+	}
 	private Random random = new Random();
 	private int getSortedNum(int[] nums, int numIdx, int left, int right) {
 		if (left == right) return nums[left];
