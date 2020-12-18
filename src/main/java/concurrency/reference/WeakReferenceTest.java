@@ -69,8 +69,8 @@ public class WeakReferenceTest {
 		}
 		System.out.println("object:" + first);
 		System.out.println("reference:"+reference);
-		// reference 依旧不持有对象。
-		// 对弱引用的强引用也会干扰弱引用的回收，而reference引用不会干扰。
+		// 持有reference 不影响对象的回收。
+		// 对弱引用的强引用（持有object）会干扰弱引用的回收，而reference引用不会干扰。
 		// 弱引用内部的object不会影响弱引用的回收，而弱引用中的强引用也会被正确的回收。
 		// 所以为什么ThreadLocal中Entry.value会泄漏？
 		// ThreadLocal中，Entry的引用没有被清理掉，只是里面的ThreadLocal被清理了，所以导致了泄漏。
