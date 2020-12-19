@@ -59,7 +59,7 @@ function Student(name, grade) {
 	this.grade = grade;
 	this.sex = '';
 }
-Student.prototype = Object.create(Person.prototype);
+Student.prototype = Object.create(Person.prototype);//该操作会导致constructor为Person.
 Student.constructor = Student;
 Student.prototype.setSex = function(sex) {
 	this.sex = sex;
