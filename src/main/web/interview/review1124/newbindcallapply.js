@@ -19,7 +19,6 @@ function _new(func, ...args) {
 // call:
 // call会将第一个参数作为this,后面的参数作为执行参数。
 // 执行时，会将其先绑定到context上，执行完毕后删除。
-// TODO 如果传入的是function，实际的context会返回什么呢，要查试一下
 Function.prototype._call = function _call(context, ...args) {
 	let key = new Symbol(1);
 	if (context == null || (typeof(context) != 'object' && typeof(context) != 'function'))
