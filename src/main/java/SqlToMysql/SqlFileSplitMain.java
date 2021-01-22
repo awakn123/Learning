@@ -8,7 +8,6 @@ import SqlToMysql.split.SqlFileSplit;
 import SqlToMysql.type.oracleSqlType.OracleTriggerType;
 import SqlToMysql.util.SqlUtils;
 import com.google.common.collect.Lists;
-import com.sun.javafx.binding.StringFormatter;
 
 import java.io.IOException;
 import java.util.List;
@@ -47,7 +46,8 @@ public class SqlFileSplitMain {
 		Map<OracleTriggerType.TriggerEnum, List<OracleTrigger>> triggerEnumMap =
 				beanToMap(triggerMap.get("BEFORE INSERT"), t -> OracleTriggerType.TriggerEnum.getBySql(t.getSql()));
 		triggerEnumMap.get(OracleTriggerType.TriggerEnum.autoIncrement).stream().forEach(t -> {
-			autoIncreList.add(StringFormatter.format("%s,%s,%s", t.getName(), t.getTable(), OracleTriggerType.TriggerEnum.getAutoIncrementIdCol(t.getSql())).get());
+			// 由jdk8升到openjdk13后，binding包不见了。
+//			autoIncreList.add(StringFormatter.format("%s,%s,%s", t.getName(), t.getTable(), OracleTriggerType.TriggerEnum.getAutoIncrementIdCol(t.getSql())).get());
 		});
 		triggerEnumMap.get(OracleTriggerType.TriggerEnum.other).stream().forEach(t -> {
 			beforeInsertBlocks.add(t.getBlock());

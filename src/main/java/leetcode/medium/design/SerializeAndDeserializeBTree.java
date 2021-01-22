@@ -3,7 +3,6 @@ package leetcode.medium.design;
 import leetcode.util.ResultCheck;
 import leetcode.util.TreeNode;
 import leetcode.util.TreeNodeUtil;
-import sun.reflect.generics.tree.Tree;
 
 import java.util.LinkedList;
 import java.util.List;

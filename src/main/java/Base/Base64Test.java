@@ -1,13 +1,13 @@
 package Base;
 
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
-
 import java.io.*;
 
+/**
+ * 由jdk 8升到openjdk 13后，BASE64Encoder不在了。
+ */
 public class Base64Test {
 
-    public static void main(String[] args) {
+   /* public static void main(String[] args) {
         String image = "./src/test/resource/image.jpg";
         String imageWrong = "./src/test/resource/image_wrong.jpg";
         String imageStr = getImageStr(image);
@@ -58,5 +58,5 @@ public class Base64Test {
         } catch (Exception e) {
             return false;
         }
-    }
+    }*/
 }

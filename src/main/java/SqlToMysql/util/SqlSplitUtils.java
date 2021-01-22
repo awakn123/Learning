@@ -7,7 +7,6 @@ import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.dialect.oracle.ast.stmt.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.sun.javafx.binding.StringFormatter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -44,11 +43,12 @@ public class SqlSplitUtils {
 			});
 		});
 		sqlMap.entrySet().stream().forEach(entry -> {
-			try {
+				// 由jdk8升到openjdk13后，binding包不见了。
+			/*try {
 				SqlUtils.writeFileStr(writePath, StringFormatter.format(nameFormat, entry.getKey() + "(" + map.get(entry.getKey()).size() + ")").getValue(), entry.getValue());
 			} catch (IOException e) {
 				log.error(entry.getKey(), e);
-			}
+			}*/
 		});
 	}
 
@@ -109,11 +109,12 @@ public class SqlSplitUtils {
 			sqlMap.get(key).addAll(t.getBlock().getSqlList());
 		});
 		sqlMap.entrySet().stream().forEach(entry -> {
-			try {
+			// 由jdk8升到openjdk13后，binding包不见了。
+			/*try {
 				SqlUtils.writeFileStr(writePath, StringFormatter.format(nameFormat, entry.getKey()).getValue(), entry.getValue());
 			} catch (IOException e) {
 				log.error(entry.getKey(), e);
-			}
+			}*/
 		});
 	}
 
@@ -135,11 +136,12 @@ public class SqlSplitUtils {
 			sqlMap.get(key).addAll(t.getBlock().getSqlList());
 		});
 		sqlMap.entrySet().stream().forEach(entry -> {
-			try {
+			// 由jdk8升到openjdk13后，binding包不见了。
+			/*try {
 				SqlUtils.writeFileStr(writePath, StringFormatter.format(nameFormat, entry.getKey() + "(" + beanMap.get(entry.getKey()).size() + ")").getValue(), entry.getValue());
 			} catch (IOException e) {
 				log.error(entry.getKey(), e);
-			}
+			}*/
 		});
 	}
 
