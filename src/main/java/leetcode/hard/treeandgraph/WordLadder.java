@@ -1,8 +1,8 @@
 package leetcode.hard.treeandgraph;
 
 import com.google.common.collect.Lists;
-import com.sun.tools.javac.util.Pair;
 import leetcode.util.ResultCheck;
+import org.apache.commons.math3.util.Pair;
 
 import java.util.*;
 
@@ -114,8 +114,8 @@ public class WordLadder {
 	}
 	private int walkQueue(Queue<Pair<String, Integer>> queue, Map<String, Integer> currentVisited, Map<String, Integer> endVisited) {
 		Pair<String, Integer> pair = queue.remove();
-		String key = pair.fst;
-		Integer level = pair.snd;
+		String key = pair.getKey();
+		Integer level = pair.getSecond();
 		for (int i=0; i<key.length(); i++) {
 			String changeKey = key.substring(0, i) + "*" + key.substring(i+1, key.length());
 			for (String str: wordChangeMap.getOrDefault(changeKey, new HashSet<>())) {
