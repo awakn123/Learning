@@ -1,5 +1,6 @@
 package CS5800;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,6 +16,6 @@ class MaxSumWithoutAdjacencyTest {
                 {7, 16, 1, 14, 7},
                 {4, 17, 2, 14, 6},
         });
-        System.out.println(max);
+        Assertions.assertEquals(83, max);
     }
 }
