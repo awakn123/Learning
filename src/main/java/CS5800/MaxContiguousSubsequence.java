@@ -5,12 +5,14 @@ import java.util.Arrays;
 public class MaxContiguousSubsequence {
 
     public int[] getMaxArray(int[] nums) {
-        int max = 0, startIndex = -1, endIndex = -1;
-        int currentMax = 0, currentStartIndex = 0;
-        for (int i = 0; i < nums.length; i++) {
-            if ((currentMax + nums[i]) < 0) {
-                currentMax = 0;
-                currentStartIndex = i + 1;
+        if (nums.length == 0)
+            return new int[]{};
+        int max = nums[0], startIndex = 0, endIndex = 0;
+        int currentMax = nums[0], currentStartIndex = 0;
+        for (int i = 1; i < nums.length; i++) {
+            if (currentMax < 0) {
+                currentMax = nums[i];
+                currentStartIndex = i;
             } else {
                 currentMax += nums[i];
             }
@@ -23,7 +25,7 @@ public class MaxContiguousSubsequence {
 
         if (startIndex == -1 || endIndex == -1)
             return new int[]{};
-        return Arrays.copyOfRange(nums, startIndex, endIndex);
+        return Arrays.copyOfRange(nums, startIndex, endIndex + 1);
     }
 
     public int[] getMaxArray2(int[] nums) {
