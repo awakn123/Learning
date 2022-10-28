@@ -16,6 +16,6 @@ class MaxSumWithoutAdjacencyTest {
                 {7, 16, 1, 14, 7},
                 {4, 17, 2, 14, 6},
         });
-        Assertions.assertEquals(83, max);
+        Assertions.assertEquals(91, max);
     }
 }

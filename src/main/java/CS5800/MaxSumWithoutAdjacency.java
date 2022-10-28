@@ -10,7 +10,7 @@ public class MaxSumWithoutAdjacency {
     private int[][] pattern = {
             {},//empty slot
             {1}, {2}, {3}, {4},//single node
-            {1, 3}, {2, 4}, {1, 4},// two nodes
+            {1, 3}, {1, 4}, {2, 4},// two nodes
     };
 
     private int[][] compatible = {
