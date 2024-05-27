@@ -12,7 +12,6 @@ public class VaragsTest {
         t.varagsFunc("0", arg.toArray());
     }
 
-    // SSH test
     private void varagsFunc(String o, Object... args) {
         for (Object arg: args) {
             System.out.println(arg);
